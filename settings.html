@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PKM Data Entry Assistant</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>PKM Data Entry Assistant</h1>
+    
+    <div class="section">
+      <h2>CNIC Auto-Fill Configuration</h2>
+      <p>Configure CNIC numbers for auto-filling on PKM website forms.</p>
+      
+      <div class="form-group">
+        <label for="constableCnic">Constable CNIC:</label>
+        <input type="text" id="constableCnic" class="form-control" placeholder="Enter CNIC No." maxlength="15">
+      </div>
+      
+      <div class="form-group">
+        <label for="mohararCnic">Moharar CNIC:</label>
+        <input type="text" id="mohararCnic" class="form-control" placeholder="Enter CNIC No." maxlength="15">
+      </div>
+      
+      <div class="form-group">
+        <label for="frontdeskCnic">Front Desk CNIC:</label>
+        <input type="text" id="frontdeskCnic" class="form-control" placeholder="Enter CNIC No." maxlength="15">
+      </div>
+      
+      <div class="form-group">
+        <label for="cnicFillKey">CNIC Auto-fill Trigger Key:</label>
+        <select id="cnicFillKey" class="form-control">
+          <option value="c">C</option>
+          <option value="6">6 (Number Six)</option>
+          <option value="7">7 (Number Seven)</option>
+          <option value="n">N</option>
+          <option value="d">D</option>
+        </select>
+      </div>
+      <p class="help-text">Press this key on the PKM website to auto-fill CNIC fields only.</p>
+      
+      <div class="button-row">
+        <button id="saveCnicSettings">Save CNIC Settings</button>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>OTP Auto-Fill Configuration</h2>
+      <p>Configure OTP numbers for auto-filling on PKM website forms.</p>
+      
+      <div class="form-group">
+        <label for="constableOtp">Constable OTP:</label>
+        <input type="text" id="constableOtp" class="form-control" placeholder="Enter OTP" maxlength="4">
+      </div>
+      
+      <div class="form-group">
+        <label for="mohararOtp">Moharar OTP:</label>
+        <input type="text" id="mohararOtp" class="form-control" placeholder="Enter OTP" maxlength="4">
+      </div>
+      
+      <div class="form-group">
+        <label for="frontdeskOtp">Front Desk OTP:</label>
+        <input type="text" id="frontdeskOtp" class="form-control" placeholder="Enter OTP" maxlength="4">
+      </div>
+      
+      <div class="form-group">
+        <label for="otpFillKey">OTP Auto-fill Trigger Key:</label>
+        <select id="otpFillKey" class="form-control">
+          <option value="1">1 (Number One)</option>
+          <option value="2">2 (Number Two)</option>
+          <option value="3">3 (Number Three)</option>
+          <option value="a">A</option>
+          <option value="f">F</option>
+          <option value="o">O</option>
+        </select>
+      </div>
+      <p class="help-text">Press this key on the PKM website to auto-fill OTP fields only.</p>
+      
+      <div class="button-row">
+        <button id="saveOtpSettings">Save OTP Settings</button>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>Email Configuration</h2>
+      <p>Configure email address for OTP notifications (same email will be used for all fields).</p>
+      
+      <div class="form-group">
+        <label for="sharedEmail">Email Address:</label>
+        <input type="email" id="sharedEmail" class="form-control" placeholder="Enter email address">
+      </div>
+      
+      <div class="form-group">
+        <label for="emailFillKey">Email Auto-fill Trigger Key:</label>
+        <select id="emailFillKey" class="form-control">
+          <option value="e">E</option>
+          <option value="4">4 (Number Four)</option>
+          <option value="5">5 (Number Five)</option>
+          <option value="m">M</option>
+          <option value="i">I</option>
+        </select>
+      </div>
+      <p class="help-text">Press this key on the PKM website to auto-fill Email fields only.</p>
+      
+      <div class="button-row">
+        <button id="saveEmailSettings">Save Email Settings</button>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>Combined Auto-Fill Settings</h2>
+      <div class="form-group checkbox-group">
+        <input type="checkbox" id="autoFillEnabled" checked>
+        <label for="autoFillEnabled">Enable automatic form filling</label>
+      </div>
+      <p class="help-text">When enabled, the extension will automatically fill fields on the PKM website.</p>
+      
+      <div class="form-group">
+        <label for="autoFillKey">Combined Auto-fill Trigger Key:</label>
+        <select id="autoFillKey" class="form-control">
+          <option value="1">1 (Number One)</option>
+          <option value="2">2 (Number Two)</option>
+          <option value="3">3 (Number Three)</option>
+          <option value="a">A</option>
+          <option value="f">F</option>
+          <option value="o">O</option>
+        </select>
+      </div>
+      <p class="help-text">Press this key on the PKM website to auto-fill ALL fields (CNIC, OTP, Email) at once.</p>
+    </div>
+    
+    <div class="section">
+      <h2>Criminal Record Setting</h2>
+      <div class="form-group checkbox-group">
+        <input type="checkbox" id="autoSelectNoRecord" checked>
+        <label for="autoSelectNoRecord">Auto-select "No" for Criminal Record</label>
+      </div>
+      <p class="help-text">When enabled, the extension will automatically select "No" in the Criminal Record dropdown.</p>
+      
+      <div class="form-group">
+        <label for="criminalRecordKey">Criminal Record "No" Selection Key:</label>
+        <select id="criminalRecordKey" class="form-control">
+          <option value="n">N</option>
+          <option value="r">R</option>
+          <option value="6">6 (Number Six)</option>
+          <option value="7">7 (Number Seven)</option>
+          <option value="8">8 (Number Eight)</option>
+          <option value="9">9 (Number Nine)</option>
+        </select>
+      </div>
+      <p class="help-text">Press this key on the PKM website to manually select "No" in the Criminal Record dropdown.</p>
+    </div>
+    
+    <div class="section">
+      <h2>Data Fetching Settings</h2>
+      <div class="form-group checkbox-group">
+        <input type="checkbox" id="useRealisticInteraction" checked>
+        <label for="useRealisticInteraction">Use Realistic User Interaction</label>
+      </div>
+      <p class="help-text">When enabled, the extension will simulate realistic typing behavior to trigger the website's data fetching mechanism. This should help when the website doesn't automatically fetch data after CNIC is filled.</p>
+    </div>
+    
+    <div class="button-row">
+      <button id="applyOtp">Apply Auto-Fill Settings</button>
+    </div>
+  </div>
+  
+  <script src="settings.js"></script>
+</body>
+</html>
