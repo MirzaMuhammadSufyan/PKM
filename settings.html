@@ -51,6 +51,61 @@
     </div>
     
     <div class="section">
+      <h2>Email Configuration</h2>
+      <p>Configure email address for OTP notifications (same email will be used for all fields).</p>
+      
+      <div class="form-group">
+        <label for="sharedEmail">Email Address:</label>
+        <input type="email" id="sharedEmail" class="form-control" placeholder="Enter email address">
+      </div>
+      
+      <div class="form-group">
+        <label for="emailFillKey">Email Auto-fill Trigger Key:</label>
+        <select id="emailFillKey" class="form-control">
+          <option value="0">0 (Number Zero)</option>
+          <option value="1">1 (Number One)</option>
+          <option value="2">2 (Number Two)</option>
+          <option value="3">3 (Number Three)</option>
+          <option value="4">4 (Number Four)</option>
+          <option value="5">5 (Number Five)</option>
+          <option value="6">6 (Number Six)</option>
+          <option value="7">7 (Number Seven)</option>
+          <option value="8">8 (Number Eight)</option>
+          <option value="9">9 (Number Nine)</option>
+        </select>
+      </div>
+      <p class="help-text">Press this key on the PKM website to auto-fill Email fields only.</p>
+      
+      <div class="button-row">
+        <button id="saveEmailSettings">Save Email Settings</button>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>Send OTP Settings</h2>
+      <div class="form-group">
+        <label for="sendOtpKey">Send OTP Key:</label>
+        <select id="sendOtpKey" class="form-control">
+          <option value="0">0 (Number Zero)</option>
+          <option value="1">1 (Number One)</option>
+          <option value="2">2 (Number Two)</option>
+          <option value="3">3 (Number Three)</option>
+          <option value="4">4 (Number Four)</option>
+          <option value="5">5 (Number Five)</option>
+          <option value="6">6 (Number Six)</option>
+          <option value="7">7 (Number Seven)</option>
+          <option value="8">8 (Number Eight)</option>
+          <option value="9">9 (Number Nine)</option>
+        </select>
+      </div>
+      <p class="help-text">Press this key on the PKM website to send OTPs for all fields (constable, moharar, frontdesk).</p>
+      
+      <div class="button-row">
+        <button id="saveSendOtpSettings">Save Send OTP Settings</button>
+      </div>
+    </div>
+    
+    <div class="section">
       <h2>OTP Configuration</h2>
       <p>Configure OTP numbers for auto-filling on PKM website forms.</p>
       
@@ -92,17 +147,10 @@
     </div>
     
     <div class="section">
-      <h2>Email Configuration</h2>
-      <p>Configure email address for OTP notifications (same email will be used for all fields).</p>
-      
+      <h2>Verify OTP Settings</h2>
       <div class="form-group">
-        <label for="sharedEmail">Email Address:</label>
-        <input type="email" id="sharedEmail" class="form-control" placeholder="Enter email address">
-      </div>
-      
-      <div class="form-group">
-        <label for="emailFillKey">Email Auto-fill Trigger Key:</label>
-        <select id="emailFillKey" class="form-control">
+        <label for="verifyOtpKey">Verify OTP Key:</label>
+        <select id="verifyOtpKey" class="form-control">
           <option value="0">0 (Number Zero)</option>
           <option value="1">1 (Number One)</option>
           <option value="2">2 (Number Two)</option>
@@ -115,40 +163,10 @@
           <option value="9">9 (Number Nine)</option>
         </select>
       </div>
-      <p class="help-text">Press this key on the PKM website to auto-fill Email fields only.</p>
+      <p class="help-text">Press this key on the PKM website to verify OTPs for all fields (constable, moharar, frontdesk).</p>
       
       <div class="button-row">
-        <button id="saveEmailSettings">Save Email Settings</button>
-      </div>
-    </div>
-    
-    <div class="section">
-      <h2>Combined Auto-Fill Settings</h2>
-      <div class="form-group checkbox-group">
-        <input type="checkbox" id="autoFillEnabled" checked>
-        <label for="autoFillEnabled">Enable automatic form filling</label>
-      </div>
-      <p class="help-text">When enabled, the extension will automatically fill fields on the PKM website.</p>
-      
-      <div class="form-group">
-        <label for="autoFillKey">Combined Auto-fill Trigger Key:</label>
-        <select id="autoFillKey" class="form-control">
-          <option value="0">0 (Number Zero)</option>
-          <option value="1">1 (Number One)</option>
-          <option value="2">2 (Number Two)</option>
-          <option value="3">3 (Number Three)</option>
-          <option value="4">4 (Number Four)</option>
-          <option value="5">5 (Number Five)</option>
-          <option value="6">6 (Number Six)</option>
-          <option value="7">7 (Number Seven)</option>
-          <option value="8">8 (Number Eight)</option>
-          <option value="9">9 (Number Nine)</option>
-        </select>
-      </div>
-      <p class="help-text">Press this key on the PKM website to auto-fill ALL fields (CNIC, OTP, Email) at once.</p>
-      
-      <div class="button-row">
-        <button id="saveCombinedSettings">Save Combined Settings</button>
+        <button id="saveVerifyOtpSettings">Save Verify OTP Settings</button>
       </div>
     </div>
     
@@ -183,71 +201,6 @@
     </div>
     
     <div class="section">
-      <h2>OTP Action Settings</h2>
-      <div class="form-group">
-        <label for="sendOtpKey">Send OTP Key:</label>
-        <select id="sendOtpKey" class="form-control">
-          <option value="0">0 (Number Zero)</option>
-          <option value="1">1 (Number One)</option>
-          <option value="2">2 (Number Two)</option>
-          <option value="3">3 (Number Three)</option>
-          <option value="4">4 (Number Four)</option>
-          <option value="5">5 (Number Five)</option>
-          <option value="6">6 (Number Six)</option>
-          <option value="7">7 (Number Seven)</option>
-          <option value="8">8 (Number Eight)</option>
-          <option value="9">9 (Number Nine)</option>
-        </select>
-      </div>
-      <p class="help-text">Press this key on the PKM website to send OTPs for all fields (constable, moharar, frontdesk).</p>
-      
-      <div class="form-group">
-        <label for="verifyOtpKey">Verify OTP Key:</label>
-        <select id="verifyOtpKey" class="form-control">
-          <option value="0">0 (Number Zero)</option>
-          <option value="1">1 (Number One)</option>
-          <option value="2">2 (Number Two)</option>
-          <option value="3">3 (Number Three)</option>
-          <option value="4">4 (Number Four)</option>
-          <option value="5">5 (Number Five)</option>
-          <option value="6">6 (Number Six)</option>
-          <option value="7">7 (Number Seven)</option>
-          <option value="8">8 (Number Eight)</option>
-          <option value="9">9 (Number Nine)</option>
-        </select>
-      </div>
-      <p class="help-text">Press this key on the PKM website to verify OTPs for all fields (constable, moharar, frontdesk).</p>
-      
-      <div class="button-row">
-        <button id="saveOtpActionSettings">Save OTP Action Settings</button>
-      </div>
-    </div>
-    
-    <div class="section">
-      <h2>Save Record Setting</h2>
-      <div class="form-group">
-        <label for="saveRecordKey">Save Record Key:</label>
-        <select id="saveRecordKey" class="form-control">
-          <option value="0">0 (Number Zero)</option>
-          <option value="1">1 (Number One)</option>
-          <option value="2">2 (Number Two)</option>
-          <option value="3">3 (Number Three)</option>
-          <option value="4">4 (Number Four)</option>
-          <option value="5">5 (Number Five)</option>
-          <option value="6">6 (Number Six)</option>
-          <option value="7">7 (Number Seven)</option>
-          <option value="8">8 (Number Eight)</option>
-          <option value="9">9 (Number Nine)</option>
-        </select>
-      </div>
-      <p class="help-text">Press this key on the PKM website to click the Save Record button.</p>
-      
-      <div class="button-row">
-        <button id="saveRecordSettings">Save Record Settings</button>
-      </div>
-    </div>
-    
-    <div class="section">
       <h2>File Selection Setting</h2>
       <div class="form-group checkbox-group">
         <input type="checkbox" id="autoSelectFile" checked>
@@ -278,6 +231,60 @@
     </div>
     
     <div class="section">
+      <h2>Save Record Setting</h2>
+      <div class="form-group">
+        <label for="saveRecordKey">Save Record Key:</label>
+        <select id="saveRecordKey" class="form-control">
+          <option value="0">0 (Number Zero)</option>
+          <option value="1">1 (Number One)</option>
+          <option value="2">2 (Number Two)</option>
+          <option value="3">3 (Number Three)</option>
+          <option value="4">4 (Number Four)</option>
+          <option value="5">5 (Number Five)</option>
+          <option value="6">6 (Number Six)</option>
+          <option value="7">7 (Number Seven)</option>
+          <option value="8">8 (Number Eight)</option>
+          <option value="9">9 (Number Nine)</option>
+        </select>
+      </div>
+      <p class="help-text">Press this key on the PKM website to click the Save Record button.</p>
+      
+      <div class="button-row">
+        <button id="saveRecordSettings">Save Record Settings</button>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>Combined Auto-Fill Settings</h2>
+      <div class="form-group checkbox-group">
+        <input type="checkbox" id="autoFillEnabled" checked>
+        <label for="autoFillEnabled">Enable automatic form filling</label>
+      </div>
+      <p class="help-text">When enabled, the extension will automatically fill fields on the PKM website.</p>
+      
+      <div class="form-group">
+        <label for="autoFillKey">Combined Auto-fill Trigger Key:</label>
+        <select id="autoFillKey" class="form-control">
+          <option value="0">0 (Number Zero)</option>
+          <option value="1">1 (Number One)</option>
+          <option value="2">2 (Number Two)</option>
+          <option value="3">3 (Number Three)</option>
+          <option value="4">4 (Number Four)</option>
+          <option value="5">5 (Number Five)</option>
+          <option value="6">6 (Number Six)</option>
+          <option value="7">7 (Number Seven)</option>
+          <option value="8">8 (Number Eight)</option>
+          <option value="9">9 (Number Nine)</option>
+        </select>
+      </div>
+      <p class="help-text">Press this key on the PKM website to auto-fill ALL fields (CNIC, OTP, Email) at once.</p>
+      
+      <div class="button-row">
+        <button id="saveCombinedSettings">Save Combined Settings</button>
+      </div>
+    </div>
+    
+    <div class="section">
       <h2>Data Fetching Settings</h2>
       <div class="form-group checkbox-group">
         <input type="checkbox" id="useRealisticInteraction" checked>
@@ -292,6 +299,10 @@
     
     <div class="button-row">
       <button id="applyOtp">Apply All Settings</button>
+    </div>
+    
+    <div class="button-row">
+      <button id="resetHotkeys" style="background-color: #e74c3c; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; margin-top: 15px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background-color 0.3s;" onmouseover="this.style.backgroundColor='#c0392b'" onmouseout="this.style.backgroundColor='#e74c3c'">⚠️ Reset Hotkeys to Default</button>
     </div>
   </div>
   

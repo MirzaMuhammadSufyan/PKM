@@ -3,50 +3,236 @@
 // Auto-fill CNIC fields when the page loads
 console.log('PKM Data Entry Assistant: Content script loaded');
 
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('PKM Data Entry Assistant: DOMContentLoaded event fired');
-  console.log('PKM Data Entry Assistant: Current URL:', window.location.href);
-  
-  // Check if we're on the PKM website with any of the supported URL patterns
-  if (window.location.href.includes('police.pkm.punjab.gov.pk')) {
-    console.log('PKM Data Entry Assistant: On PKM website');
-    
-    // Check for specific URL patterns mentioned by the user
-    const isVerifiedSecondVersion = window.location.href.includes('/verified_second_version/');
-    const isCertificatePage = window.location.href.includes('/certificate/');
-    const isServantPage = window.location.href.includes('/servant/');
-    
-    console.log('PKM Data Entry Assistant: URL pattern checks:', {
-      isVerifiedSecondVersion,
-      isCertificatePage,
-      isServantPage
+// Add error handling for extension context
+function isExtensionContextValid() {
+  try {
+    return typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id;
+  } catch (e) {
+    console.log('PKM Data Entry Assistant: Extension context invalid');
+    return false;
+  }
+}
+
+// Safe storage access function
+function safeStorageAccess(callback) {
+  if (!isExtensionContextValid()) {
+    console.log('PKM Data Entry Assistant: Extension context invalid, using default values');
+    callback({
+      cnicFillKey: '1',
+      emailFillKey: '2',
+      sendOtpKey: '3',
+      otpFillKey: '4',
+      verifyOtpKey: '5',
+      criminalRecordKey: '6',
+      autoSelectFileKey: '7',
+      saveRecordKey: '8',
+      autoFillKey: '0',
+      autoSelectFile: true,
+      autoFillEnabled: true,
+      autoSelectNoRecord: true,
+      useRealisticInteraction: true,
+      // Add the actual data values
+      constableCnic: '',
+      mohararCnic: '',
+      frontdeskCnic: '',
+      constableOtp: '',
+      mohararOtp: '',
+      frontdeskOtp: '',
+      sharedEmail: ''
     });
+    return;
+  }
+  
+  try {
+    chrome.storage.local.get({
+      cnicFillKey: '1',
+      emailFillKey: '2',
+      sendOtpKey: '3',
+      otpFillKey: '4',
+      verifyOtpKey: '5',
+      criminalRecordKey: '6',
+      autoSelectFileKey: '7',
+      saveRecordKey: '8',
+      autoFillKey: '0',
+      autoSelectFile: true,
+      autoFillEnabled: true,
+      autoSelectNoRecord: true,
+      useRealisticInteraction: true,
+      // Add the actual data values
+      constableCnic: '',
+      mohararCnic: '',
+      frontdeskCnic: '',
+      constableOtp: '',
+      mohararOtp: '',
+      frontdeskOtp: '',
+      sharedEmail: ''
+    }, callback);
+  } catch (e) {
+    console.error('PKM Data Entry Assistant: Storage access error:', e);
+    callback({
+      cnicFillKey: '1',
+      emailFillKey: '2',
+      sendOtpKey: '3',
+      otpFillKey: '4',
+      verifyOtpKey: '5',
+      criminalRecordKey: '6',
+      autoSelectFileKey: '7',
+      saveRecordKey: '8',
+      autoFillKey: '0',
+      autoSelectFile: true,
+      autoFillEnabled: true,
+      autoSelectNoRecord: true,
+      useRealisticInteraction: true,
+      // Add the actual data values
+      constableCnic: '',
+      mohararCnic: '',
+      frontdeskCnic: '',
+      constableOtp: '',
+      mohararOtp: '',
+      frontdeskOtp: '',
+      sharedEmail: ''
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    console.log('PKM Data Entry Assistant: DOMContentLoaded event fired');
+    console.log('PKM Data Entry Assistant: Current URL:', window.location.href);
     
-    // If we're on a supported page, proceed with auto-fill functionality
-    if (isVerifiedSecondVersion || isCertificatePage || isServantPage) {
-      console.log('PKM Data Entry Assistant: Detected supported page pattern');
+    // Check if we're on the PKM website with any of the supported URL patterns
+    if (window.location.href.includes('police.pkm.punjab.gov.pk')) {
+      console.log('PKM Data Entry Assistant: On PKM website');
       
-      // Initialize keyboard shortcuts flag
-      window.keyboardListenerAdded = false;
+      // Check for specific URL patterns mentioned by the user
+      const isVerifiedSecondVersion = window.location.href.includes('/verified_second_version/');
+      const isCertificatePage = window.location.href.includes('/certificate/');
+      const isServantPage = window.location.href.includes('/servant/');
       
-      // Force initialize keyboard shortcuts immediately
-      chrome.storage.local.get({
-        cnicFillKey: 'c',
-        otpFillKey: '1',
-        emailFillKey: 'e',
-        autoFillKey: '1'
-      }, function(data) {
-        console.log('PKM Data Entry Assistant: Pre-initializing keyboard shortcuts with:', data);
+      console.log('PKM Data Entry Assistant: URL pattern checks:', {
+        isVerifiedSecondVersion,
+        isCertificatePage,
+        isServantPage
+      });
+      
+      // If we're on a supported page, proceed with auto-fill functionality
+      if (isVerifiedSecondVersion || isCertificatePage || isServantPage) {
+        console.log('PKM Data Entry Assistant: Detected supported page pattern');
         
-        // Create a direct event listener for keyboard shortcuts
-        const directKeydownListener = function(event) {
-          // Get the pressed key in different formats
-          const keyPressed = event.key.toLowerCase();
-          const keyCode = event.keyCode || event.which;
-          const charCode = String.fromCharCode(keyCode).toLowerCase();
+        // Initialize keyboard shortcuts flag
+        window.keyboardListenerAdded = false;
+        
+        // Force initialize keyboard shortcuts immediately
+        safeStorageAccess(function(data) {
+          console.log('PKM Data Entry Assistant: Pre-initializing keyboard shortcuts with:', data);
           
-          console.log('PKM Data Entry Assistant: Direct key pressed:', keyPressed, charCode);
+          // Create a direct event listener for keyboard shortcuts
+          const directKeydownListener = function(event) {
+            try {
+              // Get the pressed key in different formats
+              const keyPressed = event.key.toLowerCase();
+              const keyCode = event.keyCode || event.which;
+              const charCode = String.fromCharCode(keyCode).toLowerCase();
+              
+              console.log('PKM Data Entry Assistant: Direct key pressed:', keyPressed, charCode);
+              
+              // Normalize the configured keys to lowercase for case-insensitive comparison
+              const cnicKey = data.cnicFillKey.toLowerCase();
+              const otpKey = data.otpFillKey.toLowerCase();
+              const emailKey = data.emailFillKey.toLowerCase();
+              const combinedKey = data.autoFillKey.toLowerCase();
+              
+              // Check which key was pressed and trigger the appropriate function
+              if (keyPressed === cnicKey || charCode === cnicKey) {
+                console.log('PKM Data Entry Assistant: CNIC auto-fill key detected (direct)');
+                autofillCnicFields();
+              } else if (keyPressed === otpKey || charCode === otpKey) {
+                console.log('PKM Data Entry Assistant: OTP auto-fill key detected (direct)');
+                autofillOtpOnly();
+              } else if (keyPressed === emailKey || charCode === emailKey) {
+                console.log('PKM Data Entry Assistant: Email auto-fill key detected (direct)');
+                autofillEmailOnly();
+              } else if (keyPressed === combinedKey || charCode === combinedKey) {
+                console.log('PKM Data Entry Assistant: Combined auto-fill key detected (direct)');
+                autofillCnicFields();
+                autofillOtpFields();
+                autoselectCriminalRecord();
+              }
+            } catch (e) {
+              console.error('PKM Data Entry Assistant: Error in direct keydown listener:', e);
+            }
+          };
           
+          // Add the direct event listener
+          document.addEventListener('keydown', directKeydownListener);
+          console.log('PKM Data Entry Assistant: Direct keyboard listener added');
+        });
+        
+        setTimeout(function() {
+          try {
+            console.log('PKM Data Entry Assistant: Initializing extension features');
+            // Add auto-fill buttons to the page
+            addAutoFillButton();
+            addOtpFillButton();
+            // Auto-fill fields
+            autofillCnicFields();
+            // Add keyboard listener for auto-fill
+            addKeyboardListener();
+            
+            // Show notification about keyboard shortcuts
+            safeStorageAccess(function(data) {
+              showNotification(`Keyboard shortcuts active: ${data.cnicFillKey} for CNIC, ${data.emailFillKey} for Email, ${data.sendOtpKey} for Send OTP, ${data.otpFillKey} for OTP, ${data.verifyOtpKey} for Verify OTP, ${data.criminalRecordKey} for Criminal Record, ${data.autoSelectFileKey} for File Input, ${data.saveRecordKey} for Save Record, ${data.autoFillKey} for All Fields`);
+            });
+          } catch (e) {
+            console.error('PKM Data Entry Assistant: Error initializing extension features:', e);
+          }
+        }, 1000); // Slight delay to ensure form is loaded
+      } else {
+        console.log('PKM Data Entry Assistant: On PKM site but not on a supported page pattern');
+      }
+    } else {
+      console.log('PKM Data Entry Assistant: Not on PKM website');
+    }
+  } catch (e) {
+    console.error('PKM Data Entry Assistant: Error in DOMContentLoaded handler:', e);
+  }
+});
+
+// Also add a window.onload event handler as a backup
+window.onload = function() {
+  try {
+    console.log('PKM Data Entry Assistant: window.onload event fired');
+    
+    // Check if we're on the PKM website
+    if (window.location.href.includes('police.pkm.punjab.gov.pk')) {
+      // If keyboard listener hasn't been added yet, add it now
+      if (!window.keyboardListenerAdded) {
+        console.log('PKM Data Entry Assistant: Adding keyboard listener from window.onload event');
+        addKeyboardListener();
+        window.keyboardListenerAdded = true;
+      }
+    }
+  } catch (e) {
+    console.error('PKM Data Entry Assistant: Error in window.onload handler:', e);
+  }
+};
+
+// Add a direct event listener to the document as a fallback
+document.addEventListener('keydown', function(event) {
+  try {
+    // Only handle if we're on the PKM website
+    if (window.location.href.includes('police.pkm.punjab.gov.pk')) {
+      // If the main keyboard listener hasn't been initialized yet, handle key presses directly
+      if (!window.keyboardListenerAdded) {
+        console.log('PKM Data Entry Assistant: Direct keydown handler triggered');
+        
+        // Get the pressed key in different formats
+        const keyPressed = event.key.toLowerCase();
+        const keyCode = event.keyCode || event.which;
+        const charCode = String.fromCharCode(keyCode).toLowerCase();
+        
+        // Get the configured keys from storage
+        safeStorageAccess(function(data) {
           // Normalize the configured keys to lowercase for case-insensitive comparison
           const cnicKey = data.cnicFillKey.toLowerCase();
           const otpKey = data.otpFillKey.toLowerCase();
@@ -89,100 +275,11 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('PKM Data Entry Assistant: Auto-select file key detected (direct)');
             scrollToFileInputWithHotkey();
           }
-        };
-        
-        // Add the direct event listener
-        document.addEventListener('keydown', directKeydownListener);
-        console.log('PKM Data Entry Assistant: Direct keyboard listener added');
-      });
-      
-      setTimeout(function() {
-        console.log('PKM Data Entry Assistant: Initializing extension features');
-        // Add auto-fill buttons to the page
-        addAutoFillButton();
-        addOtpFillButton();
-        // Auto-fill fields
-        autofillCnicFields();
-        // Add keyboard listener for auto-fill
-        addKeyboardListener();
-        
-        // Show notification about keyboard shortcuts
-        chrome.storage.local.get({
-          cnicFillKey: 'c',
-          otpFillKey: '1',
-          emailFillKey: 'e',
-          autoFillKey: '1'
-        }, function(data) {
-          showNotification(`Keyboard shortcuts active: ${data.cnicFillKey} for CNIC, ${data.otpFillKey} for OTP, ${data.emailFillKey} for Email, ${data.autoFillKey} for all fields`);
         });
-      }, 1000); // Slight delay to ensure form is loaded
-    } else {
-      console.log('PKM Data Entry Assistant: On PKM site but not on a supported page pattern');
+      }
     }
-  } else {
-    console.log('PKM Data Entry Assistant: Not on PKM website');
-  }
-});
-
-// Also add a window.onload event handler as a backup
-window.onload = function() {
-  console.log('PKM Data Entry Assistant: window.onload event fired');
-  
-  // Check if we're on the PKM website
-  if (window.location.href.includes('police.pkm.punjab.gov.pk')) {
-    // If keyboard listener hasn't been added yet, add it now
-    if (!window.keyboardListenerAdded) {
-      console.log('PKM Data Entry Assistant: Adding keyboard listener from window.onload event');
-      addKeyboardListener();
-      window.keyboardListenerAdded = true;
-    }
-  }
-};
-
-// Add a direct event listener to the document as a fallback
-document.addEventListener('keydown', function(event) {
-  // Only handle if we're on the PKM website
-  if (window.location.href.includes('police.pkm.punjab.gov.pk')) {
-    // If the main keyboard listener hasn't been initialized yet, handle key presses directly
-    if (!window.keyboardListenerAdded) {
-      console.log('PKM Data Entry Assistant: Direct keydown handler triggered');
-      
-      // Get the pressed key in different formats
-      const keyPressed = event.key.toLowerCase();
-      const keyCode = event.keyCode || event.which;
-      const charCode = String.fromCharCode(keyCode).toLowerCase();
-      
-      // Get the configured keys from storage
-      chrome.storage.local.get({
-        cnicFillKey: '0',
-        otpFillKey: '1',
-        emailFillKey: '2',
-        autoFillKey: '3',
-        criminalRecordKey: '4',
-        sendOtpKey: '5',
-        verifyOtpKey: '6',
-        saveRecordKey: '7'
-      }, function(data) {
-        // Normalize the configured keys to lowercase for case-insensitive comparison
-        const cnicKey = data.cnicFillKey.toLowerCase();
-        const otpKey = data.otpFillKey.toLowerCase();
-        const emailKey = data.emailFillKey.toLowerCase();
-        const combinedKey = data.autoFillKey.toLowerCase();
-        
-        // Check which key was pressed and trigger the appropriate function
-        if (keyPressed === cnicKey || charCode === cnicKey) {
-          autofillCnicFields();
-        } else if (keyPressed === otpKey || charCode === otpKey) {
-          autofillOtpOnly();
-        } else if (keyPressed === emailKey || charCode === emailKey) {
-          autofillEmailOnly();
-        } else if (keyPressed === combinedKey || charCode === combinedKey) {
-          autofillCnicFields();
-          autofillOtpFields();
-          autoselectCriminalRecord();
-        }
-      });
-    }
+  } catch (e) {
+    console.error('PKM Data Entry Assistant: Error in direct keydown handler:', e);
   }
 });
 
@@ -262,12 +359,7 @@ function addDebugButton() {
   // Add click event listener
   button.addEventListener('click', function() {
     // Get the current keyboard shortcut settings
-    chrome.storage.local.get({
-      cnicFillKey: 'c',
-      otpFillKey: '1',
-      emailFillKey: 'e',
-      autoFillKey: '1'
-    }, function(data) {
+    safeStorageAccess(function(data) {
       // Show the current settings
       const message = `Current keyboard shortcuts:\n` +
                      `CNIC: ${data.cnicFillKey}\n` +
@@ -458,17 +550,7 @@ function addKeyboardListener() {
   }
   
   // Get the configured keys from storage
-  chrome.storage.local.get({
-    cnicFillKey: '0', // Default to '0' if not set
-    otpFillKey: '1',  // Default to '1' if not set
-    emailFillKey: '2', // Default to '2' if not set
-    autoFillKey: '3',   // Default to '3' if not set (combined key)
-    criminalRecordKey: '4', // Default to '4' if not set
-    sendOtpKey: '5', // Default to '5' if not set
-    verifyOtpKey: '6', // Default to '6' if not set
-    saveRecordKey: '7', // Default to '7' if not set
-    autoSelectFileKey: '8' // Default to '8' if not set
-  }, function(data) {
+  safeStorageAccess(function(data) {
     console.log('PKM Data Entry Assistant: Retrieved keys from storage:', 
       JSON.stringify({
         cnicFillKey: data.cnicFillKey,
@@ -558,7 +640,7 @@ function addKeyboardListener() {
     console.log('PKM Data Entry Assistant: Keyboard listener added successfully, flag set');
     
     // Show notification to indicate keyboard shortcuts are active
-    showNotification(`Keyboard shortcuts active: ${data.cnicFillKey} for CNIC, ${data.otpFillKey} for OTP, ${data.emailFillKey} for Email, ${data.autoFillKey} for all fields, ${data.criminalRecordKey} for Criminal Record, ${data.sendOtpKey} for Send OTP, ${data.verifyOtpKey} for Verify OTP, ${data.saveRecordKey} for Save Record, ${data.autoSelectFileKey} for Scroll to File Input`);
+    showNotification(`Keyboard shortcuts active: ${data.cnicFillKey} for CNIC, ${data.emailFillKey} for Email, ${data.sendOtpKey} for Send OTP, ${data.otpFillKey} for OTP, ${data.verifyOtpKey} for Verify OTP, ${data.criminalRecordKey} for Criminal Record, ${data.autoSelectFileKey} for File Input, ${data.saveRecordKey} for Save Record, ${data.autoFillKey} for All Fields`);
   });
 }
 
@@ -641,71 +723,92 @@ function pressSaveRecord() {
 
 // Listen for messages from background script and popup
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  console.log('PKM Data Entry Assistant: Message received:', request);
-  
-  if (request.action === 'enableOtpKeyListener' || request.action === 'enableKeyboardShortcuts') {
-    console.log('PKM Data Entry Assistant: Enabling keyboard shortcuts');
+  try {
+    console.log('PKM Data Entry Assistant: Message received:', request);
     
-    // Check if keys were provided in the message
-    const cnicKey = request.cnicKey || request.cnicFillKey || '0';
-    const otpKey = request.otpKey || request.otpFillKey || '1';
-    const emailKey = request.emailKey || request.emailFillKey || '2';
-    const combinedKey = request.combinedKey || request.autoFillKey || '3';
-    const criminalRecordKey = request.criminalRecordKey || '4';
-    const sendOtpKey = request.sendOtpKey || '5';
-    const verifyOtpKey = request.verifyOtpKey || '6';
-    const saveRecordKey = request.saveRecordKey || '7';
-    const autoSelectFileKey = request.autoSelectFileKey || '8';
-    
-    console.log('PKM Data Entry Assistant: Received keys from settings:', {
-      cnicKey,
-      otpKey,
-      emailKey,
-      combinedKey,
-      criminalRecordKey,
-      sendOtpKey,
-      verifyOtpKey,
-      saveRecordKey,
-      autoSelectFileKey
-    });
-    
-    // Save the keys to storage for future use
-    chrome.storage.local.set({
-      cnicFillKey: cnicKey,
-      otpFillKey: otpKey,
-      emailFillKey: emailKey,
-      autoFillKey: combinedKey,
-      criminalRecordKey: criminalRecordKey,
-      sendOtpKey: sendOtpKey,
-      verifyOtpKey: verifyOtpKey,
-      saveRecordKey: saveRecordKey,
-      autoSelectFileKey: autoSelectFileKey
-    }, function() {
-      console.log('PKM Data Entry Assistant: Saved keys to storage');
+    if (request.action === 'enableOtpKeyListener' || request.action === 'enableKeyboardShortcuts') {
+      console.log('PKM Data Entry Assistant: Enabling keyboard shortcuts');
       
-      // Remove any existing listener
-      if (window.currentKeydownListener) {
-        console.log('PKM Data Entry Assistant: Removing existing keyboard listener from message handler');
-        document.removeEventListener('keydown', window.currentKeydownListener);
-        window.keyboardListenerAdded = false;
+      // Check if keys were provided in the message
+      const cnicKey = request.cnicKey || request.cnicFillKey || '0';
+      const otpKey = request.otpKey || request.otpFillKey || '1';
+      const emailKey = request.emailKey || request.emailFillKey || '2';
+      const combinedKey = request.combinedKey || request.autoFillKey || '3';
+      const criminalRecordKey = request.criminalRecordKey || '4';
+      const sendOtpKey = request.sendOtpKey || '5';
+      const verifyOtpKey = request.verifyOtpKey || '6';
+      const saveRecordKey = request.saveRecordKey || '7';
+      const autoSelectFileKey = request.autoSelectFileKey || '8';
+      
+      console.log('PKM Data Entry Assistant: Received keys from settings:', {
+        cnicKey,
+        otpKey,
+        emailKey,
+        combinedKey,
+        criminalRecordKey,
+        sendOtpKey,
+        verifyOtpKey,
+        saveRecordKey,
+        autoSelectFileKey
+      });
+      
+      // Save the keys to storage for future use
+      if (isExtensionContextValid()) {
+        try {
+          chrome.storage.local.set({
+            cnicFillKey: cnicKey,
+            otpFillKey: otpKey,
+            emailFillKey: emailKey,
+            autoFillKey: combinedKey,
+            criminalRecordKey: criminalRecordKey,
+            sendOtpKey: sendOtpKey,
+            verifyOtpKey: verifyOtpKey,
+            saveRecordKey: saveRecordKey,
+            autoSelectFileKey: autoSelectFileKey
+          }, function() {
+            console.log('PKM Data Entry Assistant: Saved keys to storage');
+            
+            // Remove any existing listener
+            if (window.currentKeydownListener) {
+              console.log('PKM Data Entry Assistant: Removing existing keyboard listener from message handler');
+              document.removeEventListener('keydown', window.currentKeydownListener);
+              window.keyboardListenerAdded = false;
+            }
+            
+            // Add or update the keyboard listener
+            console.log('PKM Data Entry Assistant: Adding/updating keyboard listener from message handler');
+            addKeyboardListener();
+            
+            showNotification(`Press: ${cnicKey} for CNIC, ${emailKey} for Email, ${sendOtpKey} for Send OTP, ${otpKey} for OTP, ${verifyOtpKey} for Verify OTP, ${criminalRecordKey} for Criminal Record, ${autoSelectFileKey} for File Input, ${saveRecordKey} for Save Record, ${combinedKey} for All Fields`);
+            
+            // Send response back to confirm listener was enabled
+            if (sendResponse) {
+              sendResponse({success: true, message: 'Keyboard shortcuts enabled'});
+            }
+          });
+        } catch (e) {
+          console.error('PKM Data Entry Assistant: Error saving to storage:', e);
+          if (sendResponse) {
+            sendResponse({success: false, message: 'Error saving settings'});
+          }
+        }
+      } else {
+        console.log('PKM Data Entry Assistant: Extension context invalid, cannot save settings');
+        if (sendResponse) {
+          sendResponse({success: false, message: 'Extension context invalid'});
+        }
       }
-      
-      // Add or update the keyboard listener
-      console.log('PKM Data Entry Assistant: Adding/updating keyboard listener from message handler');
-      addKeyboardListener();
-      
-      showNotification(`Press: ${cnicKey} for CNIC, ${otpKey} for OTP, ${emailKey} for Email, ${combinedKey} for all fields, ${criminalRecordKey} for Criminal Record, ${sendOtpKey} for Send OTP, ${verifyOtpKey} for Verify OTP, ${saveRecordKey} for Save Record, ${autoSelectFileKey} for Scroll to File Input`);
-      
-      // Send response back to confirm listener was enabled
-      sendResponse({success: true, message: 'Keyboard shortcuts enabled'});
-    });
+    }
     
-    // Return true to indicate we'll send a response asynchronously
+    // Return true for all messages to keep the message channel open
+    return true;
+  } catch (e) {
+    console.error('PKM Data Entry Assistant: Error in message listener:', e);
+    if (sendResponse) {
+      sendResponse({success: false, message: 'Error processing message'});
+    }
     return true;
   }
-  
-  // Return true for all messages to keep the message channel open
-  return true;
 });
 
 // Function to auto-select "No" in the Criminal Record dropdown
@@ -716,9 +819,7 @@ function autoselectCriminalRecord() {
   // Check if the dropdown exists on the page
   if (criminalRecordDropdown) {
     // Get setting from storage
-    chrome.storage.local.get({
-      autoSelectNoRecord: true // Default to true if not set
-    }, function(data) {
+    safeStorageAccess(function(data) {
       // Only proceed if auto-select is enabled
       if (data.autoSelectNoRecord) {
         // Select "No" option
@@ -754,21 +855,33 @@ function selectCriminalRecordNo() {
 
 // Function to auto-fill CNIC fields on the PKM website
 function autofillCnicFields() {
+  console.log('PKM Data Entry Assistant: autofillCnicFields called');
+  
   // Get the CNIC input fields from the page
   const constableCnicField = document.getElementById('constable_cnic_txt');
   const mohararCnicField = document.getElementById('moharar_cnic_txt');
   const frontdeskCnicField = document.getElementById('frontdesk_cnic_txt');
   
+  console.log('PKM Data Entry Assistant: Found CNIC fields:', {
+    constableCnicField: !!constableCnicField,
+    mohararCnicField: !!mohararCnicField,
+    frontdeskCnicField: !!frontdeskCnicField
+  });
+  
   // Check if any of the fields exist on the page
   if (constableCnicField || mohararCnicField || frontdeskCnicField) {
+    console.log('PKM Data Entry Assistant: CNIC fields found, proceeding with auto-fill');
+    
     // Get saved CNIC values from storage
-    chrome.storage.local.get({
-      constableCnic: '',
-      mohararCnic: '',
-      frontdeskCnic: '',
-      autoFillEnabled: true,
-      useRealisticInteraction: true // New setting for realistic interaction
-    }, function(data) {
+    safeStorageAccess(function(data) {
+      console.log('PKM Data Entry Assistant: Retrieved data from storage:', {
+        autoFillEnabled: data.autoFillEnabled,
+        constableCnic: data.constableCnic,
+        mohararCnic: data.mohararCnic,
+        frontdeskCnic: data.frontdeskCnic,
+        useRealisticInteraction: data.useRealisticInteraction
+      });
+      
       // Only proceed if auto-fill is enabled
       if (data.autoFillEnabled) {
         let fieldsFilledCount = 0;
@@ -776,11 +889,16 @@ function autofillCnicFields() {
         // Function to fill a CNIC field and trigger events
         function fillCnicField(field, cnicValue) {
           if (field && cnicValue) {
+            console.log('PKM Data Entry Assistant: Filling field with value:', cnicValue);
+            
             if (data.useRealisticInteraction) {
               // Use realistic user interaction simulation
+              console.log('PKM Data Entry Assistant: Using realistic interaction');
               simulateUserInteraction(field, cnicValue);
             } else {
               // Use the original method
+              console.log('PKM Data Entry Assistant: Using direct method');
+              
               // Focus on the field first
               field.focus();
               
@@ -806,6 +924,11 @@ function autofillCnicFields() {
             
             fieldsFilledCount++;
             console.log('PKM Data Entry Assistant: Filled CNIC field with value:', cnicValue);
+          } else {
+            console.log('PKM Data Entry Assistant: Field or value missing:', {
+              field: !!field,
+              cnicValue: cnicValue
+            });
           }
         }
         
@@ -822,9 +945,18 @@ function autofillCnicFields() {
           setTimeout(() => {
             console.log('PKM Data Entry Assistant: CNIC auto-fill completed, data should be fetched from server');
           }, 500);
+        } else {
+          console.log('PKM Data Entry Assistant: No CNIC fields were filled');
+          showNotification('No CNIC values found in settings. Please configure CNIC values first.');
         }
+      } else {
+        console.log('PKM Data Entry Assistant: Auto-fill is disabled');
+        showNotification('Auto-fill is disabled in settings');
       }
     });
+  } else {
+    console.log('PKM Data Entry Assistant: No CNIC fields found on this page');
+    showNotification('No CNIC fields found on this page');
   }
 }
 
@@ -833,7 +965,7 @@ function triggerDataFetching() {
   console.log('PKM Data Entry Assistant: Attempting to trigger data fetching');
   
   // Method 1: Try to find and click any "Search" or "Fetch" buttons
-  const searchButtons = document.querySelectorAll('button[type="submit"], input[type="submit"], .search-btn, .fetch-btn, button:contains("Search"), button:contains("Fetch")');
+  const searchButtons = document.querySelectorAll('button[type="submit"], input[type="submit"], .search-btn, .fetch-btn');
   if (searchButtons.length > 0) {
     console.log('PKM Data Entry Assistant: Found search buttons, clicking first one');
     searchButtons[0].click();
@@ -918,69 +1050,112 @@ function simulateUserInteraction(field, value) {
 
 // Function to auto-fill OTP fields only
 function autofillOtpOnly() {
+  console.log('PKM Data Entry Assistant: autofillOtpOnly called');
+  
   // Get the OTP input fields from the page
   const constableOtpField = document.getElementById('constable_otp_txt');
   const mohararOtpField = document.getElementById('moharar_otp_txt');
   const frontdeskOtpField = document.getElementById('frontdesk_otp_txt');
   
+  console.log('PKM Data Entry Assistant: Found OTP fields:', {
+    constableOtpField: !!constableOtpField,
+    mohararOtpField: !!mohararOtpField,
+    frontdeskOtpField: !!frontdeskOtpField
+  });
+  
   // Check if any of the fields exist on the page
   if (constableOtpField || mohararOtpField || frontdeskOtpField) {
+    console.log('PKM Data Entry Assistant: OTP fields found, proceeding with auto-fill');
+    
     // Get saved values from storage
-    chrome.storage.local.get({
-      constableOtp: '',
-      mohararOtp: '',
-      frontdeskOtp: '',
-      autoFillEnabled: true
-    }, function(data) {
+    safeStorageAccess(function(data) {
+      console.log('PKM Data Entry Assistant: Retrieved OTP data from storage:', {
+        autoFillEnabled: data.autoFillEnabled,
+        constableOtp: data.constableOtp,
+        mohararOtp: data.mohararOtp,
+        frontdeskOtp: data.frontdeskOtp
+      });
+      
       // Only proceed if auto-fill is enabled
       if (data.autoFillEnabled) {
         let fieldsFilledCount = 0;
         
         // Fill in the OTP fields if they exist and we have values for them
         if (constableOtpField && data.constableOtp) {
+          console.log('PKM Data Entry Assistant: Filling constable OTP field');
           constableOtpField.value = data.constableOtp;
+          constableOtpField.dispatchEvent(new Event('input', { bubbles: true }));
+          constableOtpField.dispatchEvent(new Event('change', { bubbles: true }));
           fieldsFilledCount++;
         }
         
         if (mohararOtpField && data.mohararOtp) {
+          console.log('PKM Data Entry Assistant: Filling moharar OTP field');
           mohararOtpField.value = data.mohararOtp;
+          mohararOtpField.dispatchEvent(new Event('input', { bubbles: true }));
+          mohararOtpField.dispatchEvent(new Event('change', { bubbles: true }));
           fieldsFilledCount++;
         }
         
         if (frontdeskOtpField && data.frontdeskOtp) {
+          console.log('PKM Data Entry Assistant: Filling frontdesk OTP field');
           frontdeskOtpField.value = data.frontdeskOtp;
+          frontdeskOtpField.dispatchEvent(new Event('input', { bubbles: true }));
+          frontdeskOtpField.dispatchEvent(new Event('change', { bubbles: true }));
           fieldsFilledCount++;
         }
         
         // Show notification if any field was filled
         if (fieldsFilledCount > 0) {
           showNotification(`${fieldsFilledCount} OTP fields auto-filled`);
+        } else {
+          console.log('PKM Data Entry Assistant: No OTP fields were filled');
+          showNotification('No OTP values found in settings. Please configure OTP values first.');
         }
+      } else {
+        console.log('PKM Data Entry Assistant: Auto-fill is disabled');
+        showNotification('Auto-fill is disabled in settings');
       }
     });
+  } else {
+    console.log('PKM Data Entry Assistant: No OTP fields found on this page');
+    showNotification('No OTP fields found on this page');
   }
 }
 
 // Function to auto-fill Email fields only
 function autofillEmailOnly() {
+  console.log('PKM Data Entry Assistant: autofillEmailOnly called');
+  
   // Get the email input fields from the page - check both by id and name
   const constableEmailField = document.getElementById('constable_email_txt');
   const mohararEmailField = document.getElementById('moharar_email_txt') || document.querySelector('input[name="moharar_email_txt"]');
   const frontdeskEmailField = document.getElementById('frontdesk_email_txt') || document.querySelector('input[name="frontdesk_email_txt"]');
   
+  console.log('PKM Data Entry Assistant: Found Email fields:', {
+    constableEmailField: !!constableEmailField,
+    mohararEmailField: !!mohararEmailField,
+    frontdeskEmailField: !!frontdeskEmailField
+  });
+  
   // Check if any of the fields exist on the page
   if (constableEmailField || mohararEmailField || frontdeskEmailField) {
+    console.log('PKM Data Entry Assistant: Email fields found, proceeding with auto-fill');
+    
     // Get saved values from storage
-    chrome.storage.local.get({
-      sharedEmail: '',
-      autoFillEnabled: true
-    }, function(data) {
+    safeStorageAccess(function(data) {
+      console.log('PKM Data Entry Assistant: Retrieved email data from storage:', {
+        autoFillEnabled: data.autoFillEnabled,
+        sharedEmail: data.sharedEmail
+      });
+      
       // Only proceed if auto-fill is enabled
       if (data.autoFillEnabled) {
         let fieldsFilledCount = 0;
         
         // Fill in the email fields with the shared email if they exist
         if (constableEmailField && data.sharedEmail) {
+          console.log('PKM Data Entry Assistant: Filling constable email field');
           constableEmailField.value = data.sharedEmail;
           // Trigger events to ensure the website recognizes the change
           constableEmailField.dispatchEvent(new Event('input', { bubbles: true }));
@@ -989,6 +1164,7 @@ function autofillEmailOnly() {
         }
         
         if (mohararEmailField && data.sharedEmail) {
+          console.log('PKM Data Entry Assistant: Filling moharar email field');
           mohararEmailField.value = data.sharedEmail;
           // Trigger events to ensure the website recognizes the change
           mohararEmailField.dispatchEvent(new Event('input', { bubbles: true }));
@@ -997,6 +1173,7 @@ function autofillEmailOnly() {
         }
         
         if (frontdeskEmailField && data.sharedEmail) {
+          console.log('PKM Data Entry Assistant: Filling frontdesk email field');
           frontdeskEmailField.value = data.sharedEmail;
           // Trigger events to ensure the website recognizes the change
           frontdeskEmailField.dispatchEvent(new Event('input', { bubbles: true }));
@@ -1007,14 +1184,25 @@ function autofillEmailOnly() {
         // Show notification if any field was filled
         if (fieldsFilledCount > 0) {
           showNotification(`${fieldsFilledCount} Email fields auto-filled`);
+        } else {
+          console.log('PKM Data Entry Assistant: No email fields were filled');
+          showNotification('No email value found in settings. Please configure email value first.');
         }
+      } else {
+        console.log('PKM Data Entry Assistant: Auto-fill is disabled');
+        showNotification('Auto-fill is disabled in settings');
       }
     });
+  } else {
+    console.log('PKM Data Entry Assistant: No email fields found on this page');
+    showNotification('No email fields found on this page');
   }
 }
 
-// Function to auto-fill both OTP and Email fields (combined)
+// Function to auto-fill OTP and Email fields
 function autofillOtpFields() {
+  console.log('PKM Data Entry Assistant: autofillOtpFields called');
+  
   // Get the OTP input fields from the page
   const constableOtpField = document.getElementById('constable_otp_txt');
   const mohararOtpField = document.getElementById('moharar_otp_txt');
@@ -1025,23 +1213,37 @@ function autofillOtpFields() {
   const mohararEmailField = document.getElementById('moharar_email_txt') || document.querySelector('input[name="moharar_email_txt"]');
   const frontdeskEmailField = document.getElementById('frontdesk_email_txt') || document.querySelector('input[name="frontdesk_email_txt"]');
   
+  console.log('PKM Data Entry Assistant: Found fields:', {
+    constableOtpField: !!constableOtpField,
+    mohararOtpField: !!mohararOtpField,
+    frontdeskOtpField: !!frontdeskOtpField,
+    constableEmailField: !!constableEmailField,
+    mohararEmailField: !!mohararEmailField,
+    frontdeskEmailField: !!frontdeskEmailField
+  });
+  
   // Check if any of the fields exist on the page
-  if ((constableOtpField || mohararOtpField || frontdeskOtpField) ||
-      (constableEmailField || mohararEmailField || frontdeskEmailField)) {
+  if (constableOtpField || mohararOtpField || frontdeskOtpField || 
+      constableEmailField || mohararEmailField || frontdeskEmailField) {
+    console.log('PKM Data Entry Assistant: Fields found, proceeding with auto-fill');
+    
     // Get saved values from storage
-    chrome.storage.local.get({
-      constableOtp: '',
-      mohararOtp: '',
-      frontdeskOtp: '',
-      sharedEmail: '',
-      autoFillEnabled: true
-    }, function(data) {
+    safeStorageAccess(function(data) {
+      console.log('PKM Data Entry Assistant: Retrieved data from storage:', {
+        autoFillEnabled: data.autoFillEnabled,
+        constableOtp: data.constableOtp,
+        mohararOtp: data.mohararOtp,
+        frontdeskOtp: data.frontdeskOtp,
+        sharedEmail: data.sharedEmail
+      });
+      
       // Only proceed if auto-fill is enabled
       if (data.autoFillEnabled) {
         let fieldsFilledCount = 0;
         
         // Fill in the OTP fields if they exist and we have values for them
         if (constableOtpField && data.constableOtp) {
+          console.log('PKM Data Entry Assistant: Filling constable OTP field');
           constableOtpField.value = data.constableOtp;
           constableOtpField.dispatchEvent(new Event('input', { bubbles: true }));
           constableOtpField.dispatchEvent(new Event('change', { bubbles: true }));
@@ -1049,6 +1251,7 @@ function autofillOtpFields() {
         }
         
         if (mohararOtpField && data.mohararOtp) {
+          console.log('PKM Data Entry Assistant: Filling moharar OTP field');
           mohararOtpField.value = data.mohararOtp;
           mohararOtpField.dispatchEvent(new Event('input', { bubbles: true }));
           mohararOtpField.dispatchEvent(new Event('change', { bubbles: true }));
@@ -1056,6 +1259,7 @@ function autofillOtpFields() {
         }
         
         if (frontdeskOtpField && data.frontdeskOtp) {
+          console.log('PKM Data Entry Assistant: Filling frontdesk OTP field');
           frontdeskOtpField.value = data.frontdeskOtp;
           frontdeskOtpField.dispatchEvent(new Event('input', { bubbles: true }));
           frontdeskOtpField.dispatchEvent(new Event('change', { bubbles: true }));
@@ -1064,21 +1268,27 @@ function autofillOtpFields() {
         
         // Fill in the email fields with the shared email if they exist
         if (constableEmailField && data.sharedEmail) {
+          console.log('PKM Data Entry Assistant: Filling constable email field');
           constableEmailField.value = data.sharedEmail;
+          // Trigger events to ensure the website recognizes the change
           constableEmailField.dispatchEvent(new Event('input', { bubbles: true }));
           constableEmailField.dispatchEvent(new Event('change', { bubbles: true }));
           fieldsFilledCount++;
         }
         
         if (mohararEmailField && data.sharedEmail) {
+          console.log('PKM Data Entry Assistant: Filling moharar email field');
           mohararEmailField.value = data.sharedEmail;
+          // Trigger events to ensure the website recognizes the change
           mohararEmailField.dispatchEvent(new Event('input', { bubbles: true }));
           mohararEmailField.dispatchEvent(new Event('change', { bubbles: true }));
           fieldsFilledCount++;
         }
         
         if (frontdeskEmailField && data.sharedEmail) {
+          console.log('PKM Data Entry Assistant: Filling frontdesk email field');
           frontdeskEmailField.value = data.sharedEmail;
+          // Trigger events to ensure the website recognizes the change
           frontdeskEmailField.dispatchEvent(new Event('input', { bubbles: true }));
           frontdeskEmailField.dispatchEvent(new Event('change', { bubbles: true }));
           fieldsFilledCount++;
@@ -1086,10 +1296,19 @@ function autofillOtpFields() {
         
         // Show notification if any field was filled
         if (fieldsFilledCount > 0) {
-          showNotification(`${fieldsFilledCount} fields auto-filled`);
+          showNotification(`${fieldsFilledCount} OTP and Email fields auto-filled`);
+        } else {
+          console.log('PKM Data Entry Assistant: No fields were filled');
+          showNotification('No OTP or Email values found in settings. Please configure values first.');
         }
+      } else {
+        console.log('PKM Data Entry Assistant: Auto-fill is disabled');
+        showNotification('Auto-fill is disabled in settings');
       }
     });
+  } else {
+    console.log('PKM Data Entry Assistant: No OTP or Email fields found on this page');
+    showNotification('No OTP or Email fields found on this page');
   }
 }
 
@@ -1203,9 +1422,7 @@ function scrollToFileInput() {
     console.log('PKM Data Entry Assistant: Found file input field, scrolling to it');
     
     // Get setting from storage
-    chrome.storage.local.get({
-      autoSelectFile: true // Default to true if not set
-    }, function(data) {
+    safeStorageAccess(function(data) {
       // Only proceed if auto-select file is enabled
       if (data.autoSelectFile) {
         // Scroll to the file input field

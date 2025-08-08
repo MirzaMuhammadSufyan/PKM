@@ -32,11 +32,13 @@ document.addEventListener('DOMContentLoaded', function() {
   const saveEmailSettingsBtn = document.getElementById('saveEmailSettings');
   const saveCombinedSettingsBtn = document.getElementById('saveCombinedSettings');
   const saveCriminalRecordSettingsBtn = document.getElementById('saveCriminalRecordSettings');
-  const saveOtpActionSettingsBtn = document.getElementById('saveOtpActionSettings');
+  const saveSendOtpSettingsBtn = document.getElementById('saveSendOtpSettings');
+  const saveVerifyOtpSettingsBtn = document.getElementById('saveVerifyOtpSettings');
   const saveRecordSettingsBtn = document.getElementById('saveRecordSettings');
   const saveDataFetchingSettingsBtn = document.getElementById('saveDataFetchingSettings');
   const saveFileSelectionSettingsBtn = document.getElementById('saveFileSelectionSettings');
   const applyOtpBtn = document.getElementById('applyOtp');
+  const resetHotkeysBtn = document.getElementById('resetHotkeys');
 
   // Load saved settings when the page opens
   loadSettings();
@@ -47,23 +49,33 @@ document.addEventListener('DOMContentLoaded', function() {
   saveEmailSettingsBtn.addEventListener('click', saveEmailSettings);
   saveCombinedSettingsBtn.addEventListener('click', saveCombinedSettings);
   saveCriminalRecordSettingsBtn.addEventListener('click', saveCriminalRecordSettings);
-  saveOtpActionSettingsBtn.addEventListener('click', saveOtpActionSettings);
+  saveSendOtpSettingsBtn.addEventListener('click', saveSendOtpSettings);
+  saveVerifyOtpSettingsBtn.addEventListener('click', saveVerifyOtpSettings);
   saveRecordSettingsBtn.addEventListener('click', saveRecordSettings);
   saveDataFetchingSettingsBtn.addEventListener('click', saveDataFetchingSettings);
   saveFileSelectionSettingsBtn.addEventListener('click', saveFileSelectionSettings);
+  
+  // Event listener for reset hotkeys button
+  resetHotkeysBtn.addEventListener('click', function() {
+    // Show confirmation dialog
+    if (confirm('Are you sure you want to reset all hotkeys to their default values?\n\nThis will change:\n1 - CNIC fields\n2 - Email fields\n3 - Send OTPs\n4 - OTP fields\n5 - Verify OTPs\n6 - Criminal Record\n7 - File Input\n8 - Save Record\n0 - All fields combined')) {
+      resetHotkeys();
+    }
+  });
   
   // Event listener for apply button
   applyOtpBtn.addEventListener('click', function() {
     // Save all settings first
     saveCnicSettings();
-    saveOtpSettings();
     saveEmailSettings();
-    saveCombinedSettings();
+    saveSendOtpSettings();
+    saveOtpSettings();
+    saveVerifyOtpSettings();
     saveCriminalRecordSettings();
-    saveOtpActionSettings();
-    saveRecordSettings();
-    saveDataFetchingSettings();
     saveFileSelectionSettings();
+    saveRecordSettings();
+    saveCombinedSettings();
+    saveDataFetchingSettings();
     
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       if (tabs[0]) {
@@ -71,21 +83,21 @@ document.addEventListener('DOMContentLoaded', function() {
         chrome.tabs.sendMessage(tabs[0].id, {
           action: "enableOtpKeyListener",
           cnicKey: cnicFillKeySelect.value,
-          otpKey: otpFillKeySelect.value,
           emailKey: emailFillKeySelect.value,
-          combinedKey: autoFillKeySelect.value,
-          criminalRecordKey: criminalRecordKeySelect.value,
           sendOtpKey: sendOtpKeySelect.value,
+          otpKey: otpFillKeySelect.value,
           verifyOtpKey: verifyOtpKeySelect.value,
-          saveRecordKey: saveRecordKeySelect.value,
+          criminalRecordKey: criminalRecordKeySelect.value,
           autoSelectFileKey: autoSelectFileKeySelect.value,
+          saveRecordKey: saveRecordKeySelect.value,
+          combinedKey: autoFillKeySelect.value,
           autoSelectNoRecord: autoSelectNoRecordCheckbox.checked
         });
       }
     });
     
     // Show a more comprehensive message about all keyboard shortcuts
-    showMessage(`Keyboard shortcuts enabled: Press ${cnicFillKeySelect.value} for CNIC, ${otpFillKeySelect.value} for OTP, ${emailFillKeySelect.value} for Email, ${autoFillKeySelect.value} for all fields, ${criminalRecordKeySelect.value} for Criminal Record, ${sendOtpKeySelect.value} for Send OTP, ${verifyOtpKeySelect.value} for Verify OTP, ${saveRecordKeySelect.value} for Save Record, ${autoSelectFileKeySelect.value} for Scroll to File Input`);
+    showMessage(`Keyboard shortcuts enabled: Press ${cnicFillKeySelect.value} for CNIC, ${emailFillKeySelect.value} for Email, ${sendOtpKeySelect.value} for Send OTP, ${otpFillKeySelect.value} for OTP, ${verifyOtpKeySelect.value} for Verify OTP, ${criminalRecordKeySelect.value} for Criminal Record, ${autoSelectFileKeySelect.value} for File Input, ${saveRecordKeySelect.value} for Save Record, ${autoFillKeySelect.value} for All Fields`);
   });
 
   // Functions
@@ -95,26 +107,32 @@ document.addEventListener('DOMContentLoaded', function() {
       constableCnic: '',
       mohararCnic: '',
       frontdeskCnic: '',
-      cnicFillKey: '0',
+      cnicFillKey: '1',
+      // Email default (shared for all)
+      sharedEmail: '',
+      emailFillKey: '2',
+      // Send OTP defaults
+      sendOtpKey: '3',
       // OTP defaults
       constableOtp: '',
       mohararOtp: '',
       frontdeskOtp: '',
-      otpFillKey: '1',
-      // Email default (shared for all)
-      sharedEmail: '',
-      emailFillKey: '2',
-      // Other settings
-      autoFillEnabled: true,
-      autoFillKey: '3',
+      otpFillKey: '4',
+      // Verify OTP defaults
+      verifyOtpKey: '5',
+      // Criminal Record defaults
       autoSelectNoRecord: true,
-      useRealisticInteraction: true, // New setting for realistic interaction
-      criminalRecordKey: '4', // New setting for criminal record key
-      sendOtpKey: '5', // New setting for send OTP key
-      verifyOtpKey: '6', // New setting for verify OTP key
-      saveRecordKey: '7', // New setting for save record key
-      autoSelectFile: true, // New setting for auto-select file
-      autoSelectFileKey: '8' // New setting for auto-select file key
+      criminalRecordKey: '6',
+      // File Selection defaults
+      autoSelectFile: true,
+      autoSelectFileKey: '7',
+      // Save Record defaults
+      saveRecordKey: '8',
+      // Combined defaults
+      autoFillEnabled: true,
+      autoFillKey: '0',
+      // Data Fetching defaults
+      useRealisticInteraction: true
     }, function(data) {
       // Set CNIC values
       constableCnicInput.value = data.constableCnic;
@@ -122,15 +140,15 @@ document.addEventListener('DOMContentLoaded', function() {
       frontdeskCnicInput.value = data.frontdeskCnic;
       cnicFillKeySelect.value = data.cnicFillKey;
       
+      // Set Email value (shared for all)
+      sharedEmailInput.value = data.sharedEmail;
+      emailFillKeySelect.value = data.emailFillKey;
+      
       // Set OTP values
       constableOtpInput.value = data.constableOtp;
       mohararOtpInput.value = data.mohararOtp;
       frontdeskOtpInput.value = data.frontdeskOtp;
       otpFillKeySelect.value = data.otpFillKey;
-      
-      // Set Email value (shared for all)
-      sharedEmailInput.value = data.sharedEmail;
-      emailFillKeySelect.value = data.emailFillKey;
       
       // Set other settings
       autoFillEnabledCheckbox.checked = data.autoFillEnabled;
@@ -200,15 +218,15 @@ document.addEventListener('DOMContentLoaded', function() {
   function saveOtpSettings() {
     // Validate OTP format
     if (!validateOtpFormat(constableOtpInput.value) && constableOtpInput.value !== '') {
-      showMessage('Invalid Constable OTP format. Please enter a 4-digit number.');
+      showMessage('Invalid Constable OTP format. OTP should be 4 digits.');
       return;
     }
     if (!validateOtpFormat(mohararOtpInput.value) && mohararOtpInput.value !== '') {
-      showMessage('Invalid Moharar OTP format. Please enter a 4-digit number.');
+      showMessage('Invalid Moharar OTP format. OTP should be 4 digits.');
       return;
     }
     if (!validateOtpFormat(frontdeskOtpInput.value) && frontdeskOtpInput.value !== '') {
-      showMessage('Invalid Front Desk OTP format. Please enter a 4-digit number.');
+      showMessage('Invalid Front Desk OTP format. OTP should be 4 digits.');
       return;
     }
     
@@ -221,6 +239,26 @@ document.addEventListener('DOMContentLoaded', function() {
       otpFillKey: otpFillKeySelect.value
     }, function() {
       showMessage('OTP settings saved successfully!');
+    });
+  }
+  
+  function saveSendOtpSettings() {
+    // Save to storage
+    chrome.storage.local.set({
+      // Save Send OTP settings
+      sendOtpKey: sendOtpKeySelect.value
+    }, function() {
+      showMessage('Send OTP settings saved successfully!');
+    });
+  }
+  
+  function saveVerifyOtpSettings() {
+    // Save to storage
+    chrome.storage.local.set({
+      // Save Verify OTP settings
+      verifyOtpKey: verifyOtpKeySelect.value
+    }, function() {
+      showMessage('Verify OTP settings saved successfully!');
     });
   }
   
@@ -305,6 +343,66 @@ document.addEventListener('DOMContentLoaded', function() {
       autoSelectFileKey: autoSelectFileKeySelect.value
     }, function() {
       showMessage('File Selection settings saved successfully!');
+    });
+  }
+  
+  function resetHotkeys() {
+    // Set all hotkeys to default values
+    cnicFillKeySelect.value = '1';
+    emailFillKeySelect.value = '2';
+    sendOtpKeySelect.value = '3';
+    otpFillKeySelect.value = '4';
+    verifyOtpKeySelect.value = '5';
+    criminalRecordKeySelect.value = '6';
+    autoSelectFileKeySelect.value = '7';
+    saveRecordKeySelect.value = '8';
+    autoFillKeySelect.value = '0';
+    
+    // Save the reset values to storage
+    chrome.storage.local.set({
+      cnicFillKey: '1',
+      emailFillKey: '2',
+      sendOtpKey: '3',
+      otpFillKey: '4',
+      verifyOtpKey: '5',
+      criminalRecordKey: '6',
+      autoSelectFileKey: '7',
+      saveRecordKey: '8',
+      autoFillKey: '0'
+    }, function() {
+      // Show success message with the new default values
+      const message = `Hotkeys reset to defaults:\n` +
+                     `1 - CNIC fields\n` +
+                     `2 - Email fields\n` +
+                     `3 - Send OTPs\n` +
+                     `4 - OTP fields\n` +
+                     `5 - Verify OTPs\n` +
+                     `6 - Criminal Record\n` +
+                     `7 - File Input\n` +
+                     `8 - Save Record\n` +
+                     `0 - All fields combined`;
+      
+      showMessage(message);
+      
+      // Apply the reset settings immediately
+      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        if (tabs[0]) {
+          // Send message to content script with reset key information
+          chrome.tabs.sendMessage(tabs[0].id, {
+            action: "enableOtpKeyListener",
+            cnicKey: '1',
+            emailKey: '2',
+            sendOtpKey: '3',
+            otpKey: '4',
+            verifyOtpKey: '5',
+            criminalRecordKey: '6',
+            autoSelectFileKey: '7',
+            saveRecordKey: '8',
+            combinedKey: '0',
+            autoSelectNoRecord: autoSelectNoRecordCheckbox.checked
+          });
+        }
+      });
     });
   }
 
