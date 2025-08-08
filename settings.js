@@ -20,11 +20,22 @@ document.addEventListener('DOMContentLoaded', function() {
   const autoFillKeySelect = document.getElementById('autoFillKey');
   const autoSelectNoRecordCheckbox = document.getElementById('autoSelectNoRecord');
   const criminalRecordKeySelect = document.getElementById('criminalRecordKey');
+  const sendOtpKeySelect = document.getElementById('sendOtpKey');
+  const verifyOtpKeySelect = document.getElementById('verifyOtpKey');
+  const saveRecordKeySelect = document.getElementById('saveRecordKey');
+  const autoSelectFileCheckbox = document.getElementById('autoSelectFile');
+  const autoSelectFileKeySelect = document.getElementById('autoSelectFileKey');
   
   // Buttons
   const saveCnicSettingsBtn = document.getElementById('saveCnicSettings');
   const saveOtpSettingsBtn = document.getElementById('saveOtpSettings');
   const saveEmailSettingsBtn = document.getElementById('saveEmailSettings');
+  const saveCombinedSettingsBtn = document.getElementById('saveCombinedSettings');
+  const saveCriminalRecordSettingsBtn = document.getElementById('saveCriminalRecordSettings');
+  const saveOtpActionSettingsBtn = document.getElementById('saveOtpActionSettings');
+  const saveRecordSettingsBtn = document.getElementById('saveRecordSettings');
+  const saveDataFetchingSettingsBtn = document.getElementById('saveDataFetchingSettings');
+  const saveFileSelectionSettingsBtn = document.getElementById('saveFileSelectionSettings');
   const applyOtpBtn = document.getElementById('applyOtp');
 
   // Load saved settings when the page opens
@@ -34,14 +45,25 @@ document.addEventListener('DOMContentLoaded', function() {
   saveCnicSettingsBtn.addEventListener('click', saveCnicSettings);
   saveOtpSettingsBtn.addEventListener('click', saveOtpSettings);
   saveEmailSettingsBtn.addEventListener('click', saveEmailSettings);
+  saveCombinedSettingsBtn.addEventListener('click', saveCombinedSettings);
+  saveCriminalRecordSettingsBtn.addEventListener('click', saveCriminalRecordSettings);
+  saveOtpActionSettingsBtn.addEventListener('click', saveOtpActionSettings);
+  saveRecordSettingsBtn.addEventListener('click', saveRecordSettings);
+  saveDataFetchingSettingsBtn.addEventListener('click', saveDataFetchingSettings);
+  saveFileSelectionSettingsBtn.addEventListener('click', saveFileSelectionSettings);
   
   // Event listener for apply button
   applyOtpBtn.addEventListener('click', function() {
     // Save all settings first
-    saveAllSettings();
     saveCnicSettings();
     saveOtpSettings();
     saveEmailSettings();
+    saveCombinedSettings();
+    saveCriminalRecordSettings();
+    saveOtpActionSettings();
+    saveRecordSettings();
+    saveDataFetchingSettings();
+    saveFileSelectionSettings();
     
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       if (tabs[0]) {
@@ -52,13 +74,18 @@ document.addEventListener('DOMContentLoaded', function() {
           otpKey: otpFillKeySelect.value,
           emailKey: emailFillKeySelect.value,
           combinedKey: autoFillKeySelect.value,
+          criminalRecordKey: criminalRecordKeySelect.value,
+          sendOtpKey: sendOtpKeySelect.value,
+          verifyOtpKey: verifyOtpKeySelect.value,
+          saveRecordKey: saveRecordKeySelect.value,
+          autoSelectFileKey: autoSelectFileKeySelect.value,
           autoSelectNoRecord: autoSelectNoRecordCheckbox.checked
         });
       }
     });
     
     // Show a more comprehensive message about all keyboard shortcuts
-    showMessage(`Keyboard shortcuts enabled: Press ${cnicFillKeySelect.value} for CNIC, ${otpFillKeySelect.value} for OTP, ${emailFillKeySelect.value} for Email, or ${autoFillKeySelect.value} for all fields`);
+    showMessage(`Keyboard shortcuts enabled: Press ${cnicFillKeySelect.value} for CNIC, ${otpFillKeySelect.value} for OTP, ${emailFillKeySelect.value} for Email, ${autoFillKeySelect.value} for all fields, ${criminalRecordKeySelect.value} for Criminal Record, ${sendOtpKeySelect.value} for Send OTP, ${verifyOtpKeySelect.value} for Verify OTP, ${saveRecordKeySelect.value} for Save Record, ${autoSelectFileKeySelect.value} for Scroll to File Input`);
   });
 
   // Functions
@@ -68,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
       constableCnic: '',
       mohararCnic: '',
       frontdeskCnic: '',
-      cnicFillKey: 'c',
+      cnicFillKey: '0',
       // OTP defaults
       constableOtp: '',
       mohararOtp: '',
@@ -76,13 +103,18 @@ document.addEventListener('DOMContentLoaded', function() {
       otpFillKey: '1',
       // Email default (shared for all)
       sharedEmail: '',
-      emailFillKey: 'e',
+      emailFillKey: '2',
       // Other settings
       autoFillEnabled: true,
-      autoFillKey: '1',
+      autoFillKey: '3',
       autoSelectNoRecord: true,
       useRealisticInteraction: true, // New setting for realistic interaction
-      criminalRecordKey: 'r' // New setting for criminal record key
+      criminalRecordKey: '4', // New setting for criminal record key
+      sendOtpKey: '5', // New setting for send OTP key
+      verifyOtpKey: '6', // New setting for verify OTP key
+      saveRecordKey: '7', // New setting for save record key
+      autoSelectFile: true, // New setting for auto-select file
+      autoSelectFileKey: '8' // New setting for auto-select file key
     }, function(data) {
       // Set CNIC values
       constableCnicInput.value = data.constableCnic;
@@ -115,6 +147,25 @@ document.addEventListener('DOMContentLoaded', function() {
       const criminalRecordSelect = document.getElementById('criminalRecordKey');
       if (criminalRecordSelect) {
         criminalRecordSelect.value = data.criminalRecordKey;
+      }
+      
+      // Set new hotkey values if the select elements exist
+      if (sendOtpKeySelect) {
+        sendOtpKeySelect.value = data.sendOtpKey;
+      }
+      if (verifyOtpKeySelect) {
+        verifyOtpKeySelect.value = data.verifyOtpKey;
+      }
+      if (saveRecordKeySelect) {
+        saveRecordKeySelect.value = data.saveRecordKey;
+      }
+      
+      // Set file selection settings if the elements exist
+      if (autoSelectFileCheckbox) {
+        autoSelectFileCheckbox.checked = data.autoSelectFile;
+      }
+      if (autoSelectFileKeySelect) {
+        autoSelectFileKeySelect.value = data.autoSelectFileKey;
       }
     });
   }
@@ -190,21 +241,70 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Function to save all settings at once (used by Apply button)
-  function saveAllSettings() {
+  function saveCombinedSettings() {
+    // Save to storage
+    chrome.storage.local.set({
+      // Save combined settings
+      autoFillEnabled: autoFillEnabledCheckbox.checked,
+      autoFillKey: autoFillKeySelect.value
+    }, function() {
+      showMessage('Combined settings saved successfully!');
+    });
+  }
+  
+  function saveCriminalRecordSettings() {
+    // Save to storage
+    chrome.storage.local.set({
+      // Save criminal record settings
+      autoSelectNoRecord: autoSelectNoRecordCheckbox.checked,
+      criminalRecordKey: criminalRecordKeySelect.value
+    }, function() {
+      showMessage('Criminal Record settings saved successfully!');
+    });
+  }
+  
+  function saveOtpActionSettings() {
+    // Save to storage
+    chrome.storage.local.set({
+      // Save OTP action settings
+      sendOtpKey: sendOtpKeySelect.value,
+      verifyOtpKey: verifyOtpKeySelect.value
+    }, function() {
+      showMessage('OTP Action settings saved successfully!');
+    });
+  }
+  
+  function saveRecordSettings() {
+    // Save to storage
+    chrome.storage.local.set({
+      // Save record settings
+      saveRecordKey: saveRecordKeySelect.value
+    }, function() {
+      showMessage('Save Record settings saved successfully!');
+    });
+  }
+  
+  function saveDataFetchingSettings() {
     // Get the realistic interaction checkbox
     const realisticInteractionCheckbox = document.getElementById('useRealisticInteraction');
     
     // Save to storage
     chrome.storage.local.set({
-      // Save other settings
-      autoFillEnabled: autoFillEnabledCheckbox.checked,
-      autoFillKey: autoFillKeySelect.value,
-      autoSelectNoRecord: autoSelectNoRecordCheckbox.checked,
-      useRealisticInteraction: realisticInteractionCheckbox ? realisticInteractionCheckbox.checked : true,
-      criminalRecordKey: criminalRecordKeySelect.value // Save criminal record key
+      // Save data fetching settings
+      useRealisticInteraction: realisticInteractionCheckbox ? realisticInteractionCheckbox.checked : true
     }, function() {
-      showMessage('Auto-fill settings applied successfully!');
+      showMessage('Data Fetching settings saved successfully!');
+    });
+  }
+  
+  function saveFileSelectionSettings() {
+    // Save to storage
+    chrome.storage.local.set({
+      // Save file selection settings
+      autoSelectFile: autoSelectFileCheckbox.checked,
+      autoSelectFileKey: autoSelectFileKeySelect.value
+    }, function() {
+      showMessage('File Selection settings saved successfully!');
     });
   }
 

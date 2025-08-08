@@ -52,6 +52,11 @@ document.addEventListener('DOMContentLoaded', function() {
           const otpKey = data.otpFillKey.toLowerCase();
           const emailKey = data.emailFillKey.toLowerCase();
           const combinedKey = data.autoFillKey.toLowerCase();
+          const criminalRecordKey = data.criminalRecordKey.toLowerCase();
+          const sendOtpKey = data.sendOtpKey.toLowerCase();
+          const verifyOtpKey = data.verifyOtpKey.toLowerCase();
+          const saveRecordKey = data.saveRecordKey.toLowerCase();
+          const autoSelectFileKey = data.autoSelectFileKey.toLowerCase();
           
           // Check which key was pressed and trigger the appropriate function
           if (keyPressed === cnicKey || charCode === cnicKey) {
@@ -68,6 +73,21 @@ document.addEventListener('DOMContentLoaded', function() {
             autofillCnicFields();
             autofillOtpFields();
             autoselectCriminalRecord();
+          } else if (keyPressed === criminalRecordKey || charCode === criminalRecordKey) {
+            console.log('PKM Data Entry Assistant: Criminal Record key detected (direct)');
+            selectCriminalRecordNo();
+          } else if (keyPressed === sendOtpKey || charCode === sendOtpKey) {
+            console.log('PKM Data Entry Assistant: Send OTP key detected (direct)');
+            sendAllOTPs();
+          } else if (keyPressed === verifyOtpKey || charCode === verifyOtpKey) {
+            console.log('PKM Data Entry Assistant: Verify OTP key detected (direct)');
+            verifyAllOTPs();
+          } else if (keyPressed === saveRecordKey || charCode === saveRecordKey) {
+            console.log('PKM Data Entry Assistant: Save Record key detected (direct)');
+            pressSaveRecord();
+          } else if (keyPressed === autoSelectFileKey || charCode === autoSelectFileKey) {
+            console.log('PKM Data Entry Assistant: Auto-select file key detected (direct)');
+            scrollToFileInputWithHotkey();
           }
         };
         
@@ -134,10 +154,14 @@ document.addEventListener('keydown', function(event) {
       
       // Get the configured keys from storage
       chrome.storage.local.get({
-        cnicFillKey: 'c',
+        cnicFillKey: '0',
         otpFillKey: '1',
-        emailFillKey: 'e',
-        autoFillKey: '1'
+        emailFillKey: '2',
+        autoFillKey: '3',
+        criminalRecordKey: '4',
+        sendOtpKey: '5',
+        verifyOtpKey: '6',
+        saveRecordKey: '7'
       }, function(data) {
         // Normalize the configured keys to lowercase for case-insensitive comparison
         const cnicKey = data.cnicFillKey.toLowerCase();
@@ -327,6 +351,100 @@ function addTestButton() {
   
   // Add to page
   document.body.appendChild(button);
+  
+  // Add OTP action buttons
+  addOtpActionButtons();
+}
+
+// Function to add OTP action buttons
+function addOtpActionButtons() {
+  // Send OTP button
+  const sendOtpButton = document.createElement('button');
+  sendOtpButton.textContent = 'Send OTPs';
+  sendOtpButton.style.position = 'fixed';
+  sendOtpButton.style.top = '50px';
+  sendOtpButton.style.right = '10px';
+  sendOtpButton.style.backgroundColor = '#2ecc71';
+  sendOtpButton.style.color = 'white';
+  sendOtpButton.style.border = 'none';
+  sendOtpButton.style.padding = '8px 12px';
+  sendOtpButton.style.borderRadius = '4px';
+  sendOtpButton.style.zIndex = '9999';
+  sendOtpButton.style.cursor = 'pointer';
+  sendOtpButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+  
+  sendOtpButton.addEventListener('click', function() {
+    console.log('PKM Data Entry Assistant: Send OTPs button clicked');
+    sendAllOTPs();
+  });
+  
+  document.body.appendChild(sendOtpButton);
+  
+  // Verify OTP button
+  const verifyOtpButton = document.createElement('button');
+  verifyOtpButton.textContent = 'Verify OTPs';
+  verifyOtpButton.style.position = 'fixed';
+  verifyOtpButton.style.top = '50px';
+  verifyOtpButton.style.right = '120px';
+  verifyOtpButton.style.backgroundColor = '#e67e22';
+  verifyOtpButton.style.color = 'white';
+  verifyOtpButton.style.border = 'none';
+  verifyOtpButton.style.padding = '8px 12px';
+  verifyOtpButton.style.borderRadius = '4px';
+  verifyOtpButton.style.zIndex = '9999';
+  verifyOtpButton.style.cursor = 'pointer';
+  verifyOtpButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+  
+  verifyOtpButton.addEventListener('click', function() {
+    console.log('PKM Data Entry Assistant: Verify OTPs button clicked');
+    verifyAllOTPs();
+  });
+  
+  document.body.appendChild(verifyOtpButton);
+  
+  // Save Record button
+  const saveRecordButton = document.createElement('button');
+  saveRecordButton.textContent = 'Save Record';
+  saveRecordButton.style.position = 'fixed';
+  saveRecordButton.style.top = '50px';
+  saveRecordButton.style.right = '230px';
+  saveRecordButton.style.backgroundColor = '#e74c3c';
+  saveRecordButton.style.color = 'white';
+  saveRecordButton.style.border = 'none';
+  saveRecordButton.style.padding = '8px 12px';
+  saveRecordButton.style.borderRadius = '4px';
+  saveRecordButton.style.zIndex = '9999';
+  saveRecordButton.style.cursor = 'pointer';
+  saveRecordButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+  
+  saveRecordButton.addEventListener('click', function() {
+    console.log('PKM Data Entry Assistant: Save Record button clicked');
+    pressSaveRecord();
+  });
+  
+  document.body.appendChild(saveRecordButton);
+  
+  // Auto-select File button
+  const autoSelectFileButton = document.createElement('button');
+  autoSelectFileButton.textContent = 'Scroll to File Input';
+  autoSelectFileButton.style.position = 'fixed';
+  autoSelectFileButton.style.top = '50px';
+  autoSelectFileButton.style.right = '340px';
+  autoSelectFileButton.style.backgroundColor = '#8e44ad';
+  autoSelectFileButton.style.color = 'white';
+  autoSelectFileButton.style.border = 'none';
+  autoSelectFileButton.style.padding = '8px 12px';
+  autoSelectFileButton.style.borderRadius = '4px';
+  autoSelectFileButton.style.zIndex = '9999';
+  autoSelectFileButton.style.cursor = 'pointer';
+  autoSelectFileButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+  
+  autoSelectFileButton.addEventListener('click', function() {
+    console.log('PKM Data Entry Assistant: Scroll to File Input button clicked');
+    scrollToFileInput();
+  });
+  
+  document.body.appendChild(autoSelectFileButton);
 }
 
 // Function to add keyboard listener for all auto-fill functions
@@ -341,17 +459,27 @@ function addKeyboardListener() {
   
   // Get the configured keys from storage
   chrome.storage.local.get({
-    cnicFillKey: 'c', // Default to 'c' if not set
+    cnicFillKey: '0', // Default to '0' if not set
     otpFillKey: '1',  // Default to '1' if not set
-    emailFillKey: 'e', // Default to 'e' if not set
-    autoFillKey: '1'   // Default to '1' if not set (combined key)
+    emailFillKey: '2', // Default to '2' if not set
+    autoFillKey: '3',   // Default to '3' if not set (combined key)
+    criminalRecordKey: '4', // Default to '4' if not set
+    sendOtpKey: '5', // Default to '5' if not set
+    verifyOtpKey: '6', // Default to '6' if not set
+    saveRecordKey: '7', // Default to '7' if not set
+    autoSelectFileKey: '8' // Default to '8' if not set
   }, function(data) {
     console.log('PKM Data Entry Assistant: Retrieved keys from storage:', 
       JSON.stringify({
         cnicFillKey: data.cnicFillKey,
         otpFillKey: data.otpFillKey,
         emailFillKey: data.emailFillKey,
-        autoFillKey: data.autoFillKey
+        autoFillKey: data.autoFillKey,
+        criminalRecordKey: data.criminalRecordKey,
+        sendOtpKey: data.sendOtpKey,
+        verifyOtpKey: data.verifyOtpKey,
+        saveRecordKey: data.saveRecordKey,
+        autoSelectFileKey: data.autoSelectFileKey
       }));
     
     // Create the event listener function
@@ -373,6 +501,11 @@ function addKeyboardListener() {
       const otpKey = data.otpFillKey.toLowerCase();
       const emailKey = data.emailFillKey.toLowerCase();
       const combinedKey = data.autoFillKey.toLowerCase();
+      const criminalRecordKey = data.criminalRecordKey.toLowerCase();
+      const sendOtpKey = data.sendOtpKey.toLowerCase();
+      const verifyOtpKey = data.verifyOtpKey.toLowerCase();
+      const saveRecordKey = data.saveRecordKey.toLowerCase();
+      const autoSelectFileKey = data.autoSelectFileKey.toLowerCase();
       
       // Check which key was pressed and trigger the appropriate function
       // Try matching both event.key and the character code from keyCode
@@ -394,6 +527,26 @@ function addKeyboardListener() {
         autofillCnicFields();
         autofillOtpFields();
         autoselectCriminalRecord();
+      } else if (keyPressed === criminalRecordKey || charCode === criminalRecordKey) {
+        console.log('PKM Data Entry Assistant: Criminal Record key pressed, selecting "No"');
+        // Criminal Record "No" selection only
+        selectCriminalRecordNo();
+      } else if (keyPressed === sendOtpKey || charCode === sendOtpKey) {
+        console.log('PKM Data Entry Assistant: Send OTP key pressed');
+        // Send OTPs for all fields
+        sendAllOTPs();
+      } else if (keyPressed === verifyOtpKey || charCode === verifyOtpKey) {
+        console.log('PKM Data Entry Assistant: Verify OTP key pressed');
+        // Verify OTPs for all fields
+        verifyAllOTPs();
+      } else if (keyPressed === saveRecordKey || charCode === saveRecordKey) {
+        console.log('PKM Data Entry Assistant: Save Record key pressed');
+        // Press Save Record button
+        pressSaveRecord();
+      } else if (keyPressed === autoSelectFileKey || charCode === autoSelectFileKey) {
+        console.log('PKM Data Entry Assistant: Auto-select file key pressed');
+        // Scroll to file input field
+        scrollToFileInputWithHotkey();
       }
     };
     
@@ -405,8 +558,83 @@ function addKeyboardListener() {
     console.log('PKM Data Entry Assistant: Keyboard listener added successfully, flag set');
     
     // Show notification to indicate keyboard shortcuts are active
-    showNotification(`Keyboard shortcuts active: ${data.cnicFillKey} for CNIC, ${data.otpFillKey} for OTP, ${data.emailFillKey} for Email, ${data.autoFillKey} for all fields`);
+    showNotification(`Keyboard shortcuts active: ${data.cnicFillKey} for CNIC, ${data.otpFillKey} for OTP, ${data.emailFillKey} for Email, ${data.autoFillKey} for all fields, ${data.criminalRecordKey} for Criminal Record, ${data.sendOtpKey} for Send OTP, ${data.verifyOtpKey} for Verify OTP, ${data.saveRecordKey} for Save Record, ${data.autoSelectFileKey} for Scroll to File Input`);
   });
+}
+
+// Function to send OTPs for all fields
+function sendAllOTPs() {
+  console.log('PKM Data Entry Assistant: Sending OTPs for all fields');
+  
+  const sendOTPButtons = [
+    document.getElementById('constable_sendOTP'),
+    document.getElementById('moharar_sendOTP'),
+    document.getElementById('frontdesk_sendOTP')
+  ];
+  
+  let buttonsClicked = 0;
+  
+  sendOTPButtons.forEach((button, index) => {
+    if (button && button.style.display !== 'none') {
+      console.log(`PKM Data Entry Assistant: Clicking send OTP button ${index + 1}`);
+      button.click();
+      buttonsClicked++;
+    }
+  });
+  
+  if (buttonsClicked > 0) {
+    showNotification(`${buttonsClicked} OTP send buttons clicked`);
+  } else {
+    showNotification('No OTP send buttons found or all are hidden');
+  }
+}
+
+// Function to verify OTPs for all fields
+function verifyAllOTPs() {
+  console.log('PKM Data Entry Assistant: Verifying OTPs for all fields');
+  
+  const verifyOTPButtons = [
+    document.getElementById('constable_savebutton'),
+    document.getElementById('moharar_savebutton'),
+    document.getElementById('frontdesk_savebutton')
+  ];
+  
+  let buttonsClicked = 0;
+  
+  verifyOTPButtons.forEach((button, index) => {
+    if (button && button.style.display !== 'none') {
+      console.log(`PKM Data Entry Assistant: Clicking verify OTP button ${index + 1}`);
+      button.click();
+      buttonsClicked++;
+    }
+  });
+  
+  if (buttonsClicked > 0) {
+    showNotification(`${buttonsClicked} OTP verify buttons clicked`);
+  } else {
+    showNotification('No OTP verify buttons found or all are hidden');
+  }
+}
+
+// Function to press the Save Record button
+function pressSaveRecord() {
+  console.log('PKM Data Entry Assistant: Pressing Save Record button');
+  
+  const saveButton = document.getElementById('save_button');
+  
+  if (saveButton) {
+    if (!saveButton.disabled) {
+      console.log('PKM Data Entry Assistant: Clicking Save Record button');
+      saveButton.click();
+      showNotification('Save Record button clicked');
+    } else {
+      console.log('PKM Data Entry Assistant: Save Record button is disabled');
+      showNotification('Save Record button is disabled');
+    }
+  } else {
+    console.log('PKM Data Entry Assistant: Save Record button not found');
+    showNotification('Save Record button not found');
+  }
 }
 
 // No longer needed - removed selection-related functionality
@@ -419,16 +647,26 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     console.log('PKM Data Entry Assistant: Enabling keyboard shortcuts');
     
     // Check if keys were provided in the message
-    const cnicKey = request.cnicKey || request.cnicFillKey || 'c';
+    const cnicKey = request.cnicKey || request.cnicFillKey || '0';
     const otpKey = request.otpKey || request.otpFillKey || '1';
-    const emailKey = request.emailKey || request.emailFillKey || 'e';
-    const combinedKey = request.combinedKey || request.autoFillKey || '1';
+    const emailKey = request.emailKey || request.emailFillKey || '2';
+    const combinedKey = request.combinedKey || request.autoFillKey || '3';
+    const criminalRecordKey = request.criminalRecordKey || '4';
+    const sendOtpKey = request.sendOtpKey || '5';
+    const verifyOtpKey = request.verifyOtpKey || '6';
+    const saveRecordKey = request.saveRecordKey || '7';
+    const autoSelectFileKey = request.autoSelectFileKey || '8';
     
     console.log('PKM Data Entry Assistant: Received keys from settings:', {
       cnicKey,
       otpKey,
       emailKey,
-      combinedKey
+      combinedKey,
+      criminalRecordKey,
+      sendOtpKey,
+      verifyOtpKey,
+      saveRecordKey,
+      autoSelectFileKey
     });
     
     // Save the keys to storage for future use
@@ -436,7 +674,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       cnicFillKey: cnicKey,
       otpFillKey: otpKey,
       emailFillKey: emailKey,
-      autoFillKey: combinedKey
+      autoFillKey: combinedKey,
+      criminalRecordKey: criminalRecordKey,
+      sendOtpKey: sendOtpKey,
+      verifyOtpKey: verifyOtpKey,
+      saveRecordKey: saveRecordKey,
+      autoSelectFileKey: autoSelectFileKey
     }, function() {
       console.log('PKM Data Entry Assistant: Saved keys to storage');
       
@@ -451,7 +694,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       console.log('PKM Data Entry Assistant: Adding/updating keyboard listener from message handler');
       addKeyboardListener();
       
-      showNotification(`Press: ${cnicKey} for CNIC, ${otpKey} for OTP, ${emailKey} for Email, or ${combinedKey} for all fields`);
+      showNotification(`Press: ${cnicKey} for CNIC, ${otpKey} for OTP, ${emailKey} for Email, ${combinedKey} for all fields, ${criminalRecordKey} for Criminal Record, ${sendOtpKey} for Send OTP, ${verifyOtpKey} for Verify OTP, ${saveRecordKey} for Save Record, ${autoSelectFileKey} for Scroll to File Input`);
       
       // Send response back to confirm listener was enabled
       sendResponse({success: true, message: 'Keyboard shortcuts enabled'});
@@ -487,6 +730,25 @@ function autoselectCriminalRecord() {
         showNotification('Criminal Record set to "No"');
       }
     });
+  }
+}
+
+// Function to manually select "No" in Criminal Record dropdown (for hotkey)
+function selectCriminalRecordNo() {
+  // Get the Criminal Record dropdown
+  const criminalRecordDropdown = document.getElementById('criminal_record');
+  
+  // Check if the dropdown exists on the page
+  if (criminalRecordDropdown) {
+    // Select "No" option
+    criminalRecordDropdown.value = 'no';
+    // Trigger change event to ensure any listeners on the dropdown are notified
+    const event = new Event('change', { bubbles: true });
+    criminalRecordDropdown.dispatchEvent(event);
+    
+    showNotification('Criminal Record manually set to "No"');
+  } else {
+    showNotification('Criminal Record dropdown not found on this page');
   }
 }
 
@@ -928,4 +1190,57 @@ function testDataFetching() {
     
     typeTestCnic();
   });
+}
+
+// Function to scroll to file input field
+function scrollToFileInput() {
+  console.log('PKM Data Entry Assistant: Scrolling to file input field');
+  
+  // Get the file input field
+  const fileInput = document.getElementById('document1');
+  
+  if (fileInput) {
+    console.log('PKM Data Entry Assistant: Found file input field, scrolling to it');
+    
+    // Get setting from storage
+    chrome.storage.local.get({
+      autoSelectFile: true // Default to true if not set
+    }, function(data) {
+      // Only proceed if auto-select file is enabled
+      if (data.autoSelectFile) {
+        // Scroll to the file input field
+        fileInput.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'center'
+        });
+        
+        // Focus on the field
+        fileInput.focus();
+        
+        // Add a highlight effect
+        const originalBorder = fileInput.style.border;
+        fileInput.style.border = '3px solid #3498db';
+        fileInput.style.boxShadow = '0 0 10px rgba(52, 152, 219, 0.5)';
+        
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+          fileInput.style.border = originalBorder;
+          fileInput.style.boxShadow = '';
+        }, 3000);
+        
+        console.log('PKM Data Entry Assistant: Scrolled to file input field successfully');
+        showNotification('Scrolled to file input field - please select KHIDMATMARKAZ.jpeg manually');
+      }
+    });
+  } else {
+    console.log('PKM Data Entry Assistant: File input field not found');
+    showNotification('File input field not found on this page');
+  }
+}
+
+// Function to scroll to file input with hotkey
+function scrollToFileInputWithHotkey() {
+  console.log('PKM Data Entry Assistant: Scroll to file input hotkey pressed');
+  scrollToFileInput();
 }

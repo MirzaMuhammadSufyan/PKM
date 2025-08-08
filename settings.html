@@ -10,32 +10,37 @@
     <h1>PKM Data Entry Assistant</h1>
     
     <div class="section">
-      <h2>CNIC Auto-Fill Configuration</h2>
+      <h2>CNIC Configuration</h2>
       <p>Configure CNIC numbers for auto-filling on PKM website forms.</p>
       
       <div class="form-group">
         <label for="constableCnic">Constable CNIC:</label>
-        <input type="text" id="constableCnic" class="form-control" placeholder="Enter CNIC No." maxlength="15">
+        <input type="text" id="constableCnic" class="form-control" placeholder="Enter CNIC (e.g., 12345-1234567-1)" maxlength="15">
       </div>
       
       <div class="form-group">
         <label for="mohararCnic">Moharar CNIC:</label>
-        <input type="text" id="mohararCnic" class="form-control" placeholder="Enter CNIC No." maxlength="15">
+        <input type="text" id="mohararCnic" class="form-control" placeholder="Enter CNIC (e.g., 12345-1234567-1)" maxlength="15">
       </div>
       
       <div class="form-group">
         <label for="frontdeskCnic">Front Desk CNIC:</label>
-        <input type="text" id="frontdeskCnic" class="form-control" placeholder="Enter CNIC No." maxlength="15">
+        <input type="text" id="frontdeskCnic" class="form-control" placeholder="Enter CNIC (e.g., 12345-1234567-1)" maxlength="15">
       </div>
       
       <div class="form-group">
         <label for="cnicFillKey">CNIC Auto-fill Trigger Key:</label>
         <select id="cnicFillKey" class="form-control">
-          <option value="c">C</option>
+          <option value="0">0 (Number Zero)</option>
+          <option value="1">1 (Number One)</option>
+          <option value="2">2 (Number Two)</option>
+          <option value="3">3 (Number Three)</option>
+          <option value="4">4 (Number Four)</option>
+          <option value="5">5 (Number Five)</option>
           <option value="6">6 (Number Six)</option>
           <option value="7">7 (Number Seven)</option>
-          <option value="n">N</option>
-          <option value="d">D</option>
+          <option value="8">8 (Number Eight)</option>
+          <option value="9">9 (Number Nine)</option>
         </select>
       </div>
       <p class="help-text">Press this key on the PKM website to auto-fill CNIC fields only.</p>
@@ -46,7 +51,7 @@
     </div>
     
     <div class="section">
-      <h2>OTP Auto-Fill Configuration</h2>
+      <h2>OTP Configuration</h2>
       <p>Configure OTP numbers for auto-filling on PKM website forms.</p>
       
       <div class="form-group">
@@ -67,12 +72,16 @@
       <div class="form-group">
         <label for="otpFillKey">OTP Auto-fill Trigger Key:</label>
         <select id="otpFillKey" class="form-control">
+          <option value="0">0 (Number Zero)</option>
           <option value="1">1 (Number One)</option>
           <option value="2">2 (Number Two)</option>
           <option value="3">3 (Number Three)</option>
-          <option value="a">A</option>
-          <option value="f">F</option>
-          <option value="o">O</option>
+          <option value="4">4 (Number Four)</option>
+          <option value="5">5 (Number Five)</option>
+          <option value="6">6 (Number Six)</option>
+          <option value="7">7 (Number Seven)</option>
+          <option value="8">8 (Number Eight)</option>
+          <option value="9">9 (Number Nine)</option>
         </select>
       </div>
       <p class="help-text">Press this key on the PKM website to auto-fill OTP fields only.</p>
@@ -94,11 +103,16 @@
       <div class="form-group">
         <label for="emailFillKey">Email Auto-fill Trigger Key:</label>
         <select id="emailFillKey" class="form-control">
-          <option value="e">E</option>
+          <option value="0">0 (Number Zero)</option>
+          <option value="1">1 (Number One)</option>
+          <option value="2">2 (Number Two)</option>
+          <option value="3">3 (Number Three)</option>
           <option value="4">4 (Number Four)</option>
           <option value="5">5 (Number Five)</option>
-          <option value="m">M</option>
-          <option value="i">I</option>
+          <option value="6">6 (Number Six)</option>
+          <option value="7">7 (Number Seven)</option>
+          <option value="8">8 (Number Eight)</option>
+          <option value="9">9 (Number Nine)</option>
         </select>
       </div>
       <p class="help-text">Press this key on the PKM website to auto-fill Email fields only.</p>
@@ -119,15 +133,23 @@
       <div class="form-group">
         <label for="autoFillKey">Combined Auto-fill Trigger Key:</label>
         <select id="autoFillKey" class="form-control">
+          <option value="0">0 (Number Zero)</option>
           <option value="1">1 (Number One)</option>
           <option value="2">2 (Number Two)</option>
           <option value="3">3 (Number Three)</option>
-          <option value="a">A</option>
-          <option value="f">F</option>
-          <option value="o">O</option>
+          <option value="4">4 (Number Four)</option>
+          <option value="5">5 (Number Five)</option>
+          <option value="6">6 (Number Six)</option>
+          <option value="7">7 (Number Seven)</option>
+          <option value="8">8 (Number Eight)</option>
+          <option value="9">9 (Number Nine)</option>
         </select>
       </div>
       <p class="help-text">Press this key on the PKM website to auto-fill ALL fields (CNIC, OTP, Email) at once.</p>
+      
+      <div class="button-row">
+        <button id="saveCombinedSettings">Save Combined Settings</button>
+      </div>
     </div>
     
     <div class="section">
@@ -141,8 +163,12 @@
       <div class="form-group">
         <label for="criminalRecordKey">Criminal Record "No" Selection Key:</label>
         <select id="criminalRecordKey" class="form-control">
-          <option value="n">N</option>
-          <option value="r">R</option>
+          <option value="0">0 (Number Zero)</option>
+          <option value="1">1 (Number One)</option>
+          <option value="2">2 (Number Two)</option>
+          <option value="3">3 (Number Three)</option>
+          <option value="4">4 (Number Four)</option>
+          <option value="5">5 (Number Five)</option>
           <option value="6">6 (Number Six)</option>
           <option value="7">7 (Number Seven)</option>
           <option value="8">8 (Number Eight)</option>
@@ -150,6 +176,105 @@
         </select>
       </div>
       <p class="help-text">Press this key on the PKM website to manually select "No" in the Criminal Record dropdown.</p>
+      
+      <div class="button-row">
+        <button id="saveCriminalRecordSettings">Save Criminal Record Settings</button>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>OTP Action Settings</h2>
+      <div class="form-group">
+        <label for="sendOtpKey">Send OTP Key:</label>
+        <select id="sendOtpKey" class="form-control">
+          <option value="0">0 (Number Zero)</option>
+          <option value="1">1 (Number One)</option>
+          <option value="2">2 (Number Two)</option>
+          <option value="3">3 (Number Three)</option>
+          <option value="4">4 (Number Four)</option>
+          <option value="5">5 (Number Five)</option>
+          <option value="6">6 (Number Six)</option>
+          <option value="7">7 (Number Seven)</option>
+          <option value="8">8 (Number Eight)</option>
+          <option value="9">9 (Number Nine)</option>
+        </select>
+      </div>
+      <p class="help-text">Press this key on the PKM website to send OTPs for all fields (constable, moharar, frontdesk).</p>
+      
+      <div class="form-group">
+        <label for="verifyOtpKey">Verify OTP Key:</label>
+        <select id="verifyOtpKey" class="form-control">
+          <option value="0">0 (Number Zero)</option>
+          <option value="1">1 (Number One)</option>
+          <option value="2">2 (Number Two)</option>
+          <option value="3">3 (Number Three)</option>
+          <option value="4">4 (Number Four)</option>
+          <option value="5">5 (Number Five)</option>
+          <option value="6">6 (Number Six)</option>
+          <option value="7">7 (Number Seven)</option>
+          <option value="8">8 (Number Eight)</option>
+          <option value="9">9 (Number Nine)</option>
+        </select>
+      </div>
+      <p class="help-text">Press this key on the PKM website to verify OTPs for all fields (constable, moharar, frontdesk).</p>
+      
+      <div class="button-row">
+        <button id="saveOtpActionSettings">Save OTP Action Settings</button>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>Save Record Setting</h2>
+      <div class="form-group">
+        <label for="saveRecordKey">Save Record Key:</label>
+        <select id="saveRecordKey" class="form-control">
+          <option value="0">0 (Number Zero)</option>
+          <option value="1">1 (Number One)</option>
+          <option value="2">2 (Number Two)</option>
+          <option value="3">3 (Number Three)</option>
+          <option value="4">4 (Number Four)</option>
+          <option value="5">5 (Number Five)</option>
+          <option value="6">6 (Number Six)</option>
+          <option value="7">7 (Number Seven)</option>
+          <option value="8">8 (Number Eight)</option>
+          <option value="9">9 (Number Nine)</option>
+        </select>
+      </div>
+      <p class="help-text">Press this key on the PKM website to click the Save Record button.</p>
+      
+      <div class="button-row">
+        <button id="saveRecordSettings">Save Record Settings</button>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>File Selection Setting</h2>
+      <div class="form-group checkbox-group">
+        <input type="checkbox" id="autoSelectFile" checked>
+        <label for="autoSelectFile">Enable scroll to file input field</label>
+      </div>
+      <p class="help-text">When enabled, the extension will scroll to the file input field and highlight it for easy access.</p>
+      
+      <div class="form-group">
+        <label for="autoSelectFileKey">Scroll to File Input Key:</label>
+        <select id="autoSelectFileKey" class="form-control">
+          <option value="0">0 (Number Zero)</option>
+          <option value="1">1 (Number One)</option>
+          <option value="2">2 (Number Two)</option>
+          <option value="3">3 (Number Three)</option>
+          <option value="4">4 (Number Four)</option>
+          <option value="5">5 (Number Five)</option>
+          <option value="6">6 (Number Six)</option>
+          <option value="7">7 (Number Seven)</option>
+          <option value="8">8 (Number Eight)</option>
+          <option value="9">9 (Number Nine)</option>
+        </select>
+      </div>
+      <p class="help-text">Press this key on the PKM website to scroll to the file input field and highlight it.</p>
+      
+      <div class="button-row">
+        <button id="saveFileSelectionSettings">Save File Selection Settings</button>
+      </div>
     </div>
     
     <div class="section">
@@ -159,10 +284,14 @@
         <label for="useRealisticInteraction">Use Realistic User Interaction</label>
       </div>
       <p class="help-text">When enabled, the extension will simulate realistic typing behavior to trigger the website's data fetching mechanism. This should help when the website doesn't automatically fetch data after CNIC is filled.</p>
+      
+      <div class="button-row">
+        <button id="saveDataFetchingSettings">Save Data Fetching Settings</button>
+      </div>
     </div>
     
     <div class="button-row">
-      <button id="applyOtp">Apply Auto-Fill Settings</button>
+      <button id="applyOtp">Apply All Settings</button>
     </div>
   </div>
   
