@@ -1,29 +1,22 @@
-# File Setup Instructions
+# File Input Field Navigation
 
-## File Input Field Navigation
+## Kaam Kese Karta Hai
 
-Due to browser security restrictions, the extension cannot automatically select files. Instead, it provides a convenient way to navigate to the file input field.
+Browser ki security ki wajah se extension file khud select nahi kar sakta. Lekin yeh aapko file input field tak jaldi pohanchne mein madad karta hai.
 
-### Features:
+### Steps:
 
-1. **Scroll to File Input**: Press the configured hotkey (default: 8) to scroll to the file input field
-2. **Visual Highlight**: The field will be highlighted with a blue border for 3 seconds
-3. **Focus**: The field will be automatically focused for easy access
-4. **Manual Selection**: You can then manually select the KHIDMATMARKAZ.jpeg file
+1. **Hotkey Navigation:** Apni set ki hui hotkey (default: 8) dabain ya "Scroll to File Input" button pe click karen.
+2. **Highlight:** File input field 3 second ke liye highlight ho jata hai.
+3. **Focus:** Field pe focus aa jata hai, aap turant file space daba kr select kar sakte hain.
+4. **Manual Selection:** Zaroori file (jaise KHIDMATMARKAZ.jpeg) khud select karen.
 
-### Usage:
+### Faiday
 
-- **Hotkey**: Press the configured key (default: 8) to scroll to file input field
-- **Button**: Click the "Scroll to File Input" button in the extension
-- **Result**: The page will scroll to the file input field and highlight it
+- File input pe jaldi pohanch jate hain.
+- Highlight se asaani se pehchan lete hain.
+- Browser ki security ke mutabiq kaam karta hai.
 
-### Benefits:
+### Koi File Setup Zaroori Nahi
 
-- **Quick Navigation**: Instantly scrolls to the file input field
-- **Visual Feedback**: Clear highlighting shows which field to use
-- **Focus Ready**: Field is automatically focused for immediate file selection
-- **Browser Compatible**: Works within browser security restrictions
-
-### No File Setup Required:
-
-Unlike the previous version, no KHIDMATMARKAZ.jpeg file needs to be added to the extension folder. The feature simply helps you navigate to the file input field quickly.
+Aapko extension folder mein koi file add karne ki zaroorat nahi. Yeh feature sirf navigation ke liye hai.
