@@ -7,9 +7,9 @@
   "action": {
     "default_popup": "settings.html",
     "default_icon": {
-      "16": "images/Logo.jpeg",
-      "48": "images/Logo.jpeg",
-      "128": "images/Logo.jpeg"
+      "16": "images/Logo.png",
+      "48": "images/Logo.png",
+      "128": "images/Logo.png"
     }
   },
   "background": {
@@ -25,8 +25,8 @@
     }
   ],
   "icons": {
-    "16": "images/Logo.jpeg",
-    "48": "images/Logo.jpeg",
-    "128": "images/Logo.jpeg"
+    "16": "images/Logo.png",
+    "48": "images/Logo.png",
+    "128": "images/Logo.png"
   }
 }
