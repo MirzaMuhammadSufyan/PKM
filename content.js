@@ -38,7 +38,8 @@ function safeStorageAccess(callback) {
       constableOtp: '',
       mohararOtp: '',
       frontdeskOtp: '',
-      sharedEmail: ''
+      sharedEmail: '',
+      autoFillCnicOnLoad: false
     });
     return;
   }
@@ -65,7 +66,8 @@ function safeStorageAccess(callback) {
       constableOtp: '',
       mohararOtp: '',
       frontdeskOtp: '',
-      sharedEmail: ''
+      sharedEmail: '',
+      autoFillCnicOnLoad: false
     }, callback);
   } catch (e) {
     console.error('PKM Data Entry Assistant: Storage access error:', e);
@@ -90,7 +92,8 @@ function safeStorageAccess(callback) {
       constableOtp: '',
       mohararOtp: '',
       frontdeskOtp: '',
-      sharedEmail: ''
+      sharedEmail: '',
+      autoFillCnicOnLoad: false
     });
   }
 }
@@ -134,6 +137,9 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // IMMEDIATELY try to add buttons (don't wait for setTimeout) - only on allowed pages
       addBulkOpenButton();
+      
+      // Add CNIC copy functionality
+      addCnicCopyFunctionality();
       
       // Add a simple test button to confirm extension is working
         
@@ -258,6 +264,9 @@ document.addEventListener('DOMContentLoaded', function() {
           console.log('PKM Data Entry Assistant: Adding bulk open buttons to PKM page');
           addBulkOpenButton();
           
+          // Add CNIC copy functionality
+          addCnicCopyFunctionality();
+          
           // Multiple retry attempts to ensure buttons are created (only on allowed pages)
           setTimeout(() => {
             addBulkOpenButton();
@@ -306,6 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('PKM Data Entry Assistant: Detected supported page pattern for auto-fill');
             addAutoFillButton();
             addOtpFillButton();
+            addAutoFillCnicCheckbox();
             // Auto-fill fields
             autofillCnicFields();
           }
@@ -342,6 +352,9 @@ window.onload = function() {
                  
                  // Add buttons immediately on window.onload (only on allowed pages)
                  addBulkOpenButton();
+                 
+                 // Add CNIC copy functionality
+                 addCnicCopyFunctionality();
       
       // If keyboard listener hasn't been added yet, add it now
       if (!window.keyboardListenerAdded) {
@@ -1120,6 +1133,92 @@ function selectCriminalRecordNo() {
   }
 }
 
+// Function to add auto-fill CNIC checkbox
+function addAutoFillCnicCheckbox() {
+  // Check if we're on a page that has CNIC fields
+  const constableCnicField = document.getElementById('constable_cnic_txt');
+  const mohararCnicField = document.getElementById('moharar_cnic_txt');
+  const frontdeskCnicField = document.getElementById('frontdesk_cnic_txt');
+  
+  if (!constableCnicField && !mohararCnicField && !frontdeskCnicField) {
+    return; // No CNIC fields found, don't add checkbox
+  }
+  
+  // Check if checkbox already exists
+  if (document.getElementById('pkm-auto-fill-cnic-checkbox')) {
+    return;
+  }
+  
+  // Create checkbox container
+  const checkboxContainer = document.createElement('div');
+  checkboxContainer.id = 'pkm-auto-fill-cnic-checkbox';
+  checkboxContainer.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 10px;
+    z-index: 10000;
+    font-size: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  `;
+  
+  // Create checkbox
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.id = 'pkm-auto-fill-cnic-checkbox-input';
+  checkbox.style.marginRight = '8px';
+  
+  // Create label
+  const label = document.createElement('label');
+  label.htmlFor = 'pkm-auto-fill-cnic-checkbox-input';
+  label.textContent = 'Auto-fill CNIC on page load';
+  label.style.cursor = 'pointer';
+  label.style.userSelect = 'none';
+  
+  // Load saved state
+  safeStorageAccess(function(data) {
+    checkbox.checked = data.autoFillCnicOnLoad || false;
+  });
+  
+  // Add change event listener
+  checkbox.addEventListener('change', function() {
+    const isChecked = this.checked;
+    
+    // Save to storage
+    if (isExtensionContextValid()) {
+      try {
+        chrome.storage.local.set({
+          autoFillCnicOnLoad: isChecked
+        });
+      } catch (e) {
+        console.error('PKM Data Entry Assistant: Error saving auto-fill CNIC setting:', e);
+      }
+    }
+    
+    // Show notification
+    showToast(isChecked ? 'Auto-fill CNIC enabled' : 'Auto-fill CNIC disabled', 'success');
+  });
+  
+  // Assemble the checkbox
+  checkboxContainer.appendChild(checkbox);
+  checkboxContainer.appendChild(label);
+  
+  // Add to page
+  document.body.appendChild(checkboxContainer);
+  
+  // Auto-fill CNIC if checkbox is checked
+  safeStorageAccess(function(data) {
+    if (data.autoFillCnicOnLoad) {
+      setTimeout(() => {
+        autofillCnicFields();
+      }, 1000); // Small delay to ensure page is fully loaded
+    }
+  });
+}
+
 // Function to auto-fill CNIC fields on the PKM website
 function autofillCnicFields() {
   console.log('PKM Data Entry Assistant: autofillCnicFields called');
@@ -1727,6 +1826,154 @@ function scrollToFileInput() {
 function scrollToFileInputWithHotkey() {
   console.log('PKM Data Entry Assistant: Scroll to file input hotkey pressed');
   scrollToFileInput();
+}
+
+// Function to show toast notification
+function showToast(message, type = 'success') {
+  // Remove existing toast if any
+  const existingToast = document.getElementById('pkm-toast');
+  if (existingToast) {
+    existingToast.remove();
+  }
+  
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.id = 'pkm-toast';
+  toast.textContent = message;
+  toast.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: ${type === 'success' ? '#4CAF50' : '#f44336'};
+    color: white;
+    padding: 12px 20px;
+    border-radius: 4px;
+    z-index: 10000;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  `;
+  
+  document.body.appendChild(toast);
+  
+  // Fade in
+  setTimeout(() => {
+    toast.style.opacity = '1';
+  }, 100);
+  
+  // Fade out and remove after 3 seconds
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.remove();
+      }
+    }, 300);
+  }, 3000);
+}
+
+// Function to copy text to clipboard
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (err) {
+    // Fallback for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return true;
+    } catch (err) {
+      document.body.removeChild(textArea);
+      return false;
+    }
+  }
+}
+
+// Function to add CNIC copy functionality
+function addCnicCopyFunctionality() {
+  // Check if we're on one of the allowed pages
+  const currentUrl = window.location.href;
+  const allowedPages = [
+    'https://police.pkm.punjab.gov.pk/ps/certificate/index/inprogress/',
+    'https://police.pkm.punjab.gov.pk/ps/servant/index/inprogress/'
+  ];
+  
+  const isAllowedPage = allowedPages.some(page => currentUrl.includes(page));
+  
+  if (!isAllowedPage) {
+    return; // Exit early if not on an allowed page
+  }
+  
+  // Function to add click handlers to CNIC cells
+  function addCnicClickHandlers() {
+    // Look for CNIC cells in the table
+    const cnicCells = document.querySelectorAll('td:nth-child(3)'); // CNIC is typically the 3rd column
+    
+    cnicCells.forEach(cell => {
+      // Skip if already has click handler
+      if (cell.hasAttribute('data-cnic-copy-added')) {
+        return;
+      }
+      
+      const cnicText = cell.textContent.trim();
+      
+      // Check if it looks like a CNIC (contains numbers and dashes)
+      if (cnicText && (cnicText.includes('-') || /^\d{5}-?\d{7}-?\d{1}$/.test(cnicText.replace(/\s/g, '')))) {
+        // Add click handler
+        cell.style.cursor = 'pointer';
+        cell.style.color = '#007bff';
+        cell.style.textDecoration = 'underline';
+        cell.title = 'Click to copy CNIC';
+        cell.setAttribute('data-cnic-copy-added', 'true');
+        
+        cell.addEventListener('click', async function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const success = await copyToClipboard(cnicText);
+          if (success) {
+            showToast(`CNIC copied: ${cnicText}`, 'success');
+          } else {
+            showToast('Failed to copy CNIC', 'error');
+          }
+        });
+      }
+    });
+  }
+  
+  // Add click handlers immediately
+  addCnicClickHandlers();
+  
+  // For certificate page, also listen for DataTable draw events to add handlers to new rows
+  if (currentUrl.includes('/certificate/index/inprogress/')) {
+    setTimeout(() => {
+      const table = $('#table').DataTable();
+      if (table) {
+        table.on('draw.dt', function() {
+          setTimeout(() => {
+            addCnicClickHandlers();
+          }, 100);
+        });
+      }
+    }, 2000);
+  }
+  
+  // Also add handlers periodically in case of dynamic content
+  setInterval(() => {
+    addCnicClickHandlers();
+  }, 2000);
 }
 
 // Function to remove existing bulk buttons
