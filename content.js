@@ -109,18 +109,33 @@ document.addEventListener('DOMContentLoaded', function() {
       const isCertificatePage = window.location.href.includes('/certificate/');
       const isServantPage = window.location.href.includes('/servant/');
       
+      // Check for pages that should have bulk open buttons (any page with tables containing verify buttons)
+      const isServantInprogressPage = window.location.href.includes('/servant/index/inprogress/') || 
+                                     window.location.href.includes('/servant') ||
+                                     window.location.href.includes('/ps/servant');
+      const isCertificateInprogressPage = window.location.href.includes('/certificate/index/inprogress/') || 
+                                         window.location.href.includes('/certificate') ||
+                                         window.location.href.includes('/ps/certificate');
+      
       console.log('PKM Data Entry Assistant: URL pattern checks:', {
         isVerifiedSecondVersion,
         isCertificatePage,
-        isServantPage
+        isServantPage,
+        isServantInprogressPage,
+        isCertificateInprogressPage,
+        currentUrl: window.location.href
       });
       
-      // If we're on a supported page, proceed with auto-fill functionality
-      if (isVerifiedSecondVersion || isCertificatePage || isServantPage) {
-        console.log('PKM Data Entry Assistant: Detected supported page pattern');
+      // Always initialize basic functionality on PKM website
+      console.log('PKM Data Entry Assistant: On PKM website - initializing basic features');
         
         // Initialize keyboard shortcuts flag
         window.keyboardListenerAdded = false;
+      
+      // IMMEDIATELY try to add buttons (don't wait for setTimeout) - only on allowed pages
+      addBulkOpenButton();
+      
+      // Add a simple test button to confirm extension is working
         
         // Force initialize keyboard shortcuts immediately
         safeStorageAccess(function(data) {
@@ -133,6 +148,17 @@ document.addEventListener('DOMContentLoaded', function() {
               const keyPressed = event.key.toLowerCase();
               const keyCode = event.keyCode || event.which;
               const charCode = String.fromCharCode(keyCode).toLowerCase();
+            
+            // Check if this is a numpad key and exclude it
+            const isNumpadKey = event.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD;
+            if (isNumpadKey) {
+              console.log('PKM Data Entry Assistant: Numpad key detected (direct), ignoring:', {
+                key: event.key,
+                keyCode: keyCode,
+                location: event.location
+              });
+              return; // Exit early for numpad keys
+            }
               
               console.log('PKM Data Entry Assistant: Direct key pressed:', keyPressed, charCode);
               
@@ -141,9 +167,62 @@ document.addEventListener('DOMContentLoaded', function() {
               const otpKey = data.otpFillKey.toLowerCase();
               const emailKey = data.emailFillKey.toLowerCase();
               const combinedKey = data.autoFillKey.toLowerCase();
+            const bulkOpenKey = 'b'; // Fixed key for bulk open functionality
+            const bulkOpenWithRecordKey = 'w'; // Fixed key for bulk open with record (warning buttons)
+            const bulkOpenInfoKey = 'i'; // Fixed key for bulk open info buttons
               
               // Check which key was pressed and trigger the appropriate function
-              if (keyPressed === cnicKey || charCode === cnicKey) {
+            if (keyPressed === bulkOpenKey || charCode === bulkOpenKey) {
+              console.log('PKM Data Entry Assistant: Bulk open key detected (direct)');
+              // Trigger bulk open functionality for all verify links
+              const tables = document.querySelectorAll('table[id="table"]');
+              let allVerifyLinks = [];
+              tables.forEach(table => {
+                const verifyButtons = table.querySelectorAll('a[href*="/servant/verified/"]');
+                verifyButtons.forEach(button => {
+                  allVerifyLinks.push(button.href);
+                });
+              });
+              if (allVerifyLinks.length > 0) {
+                openAllVerifyLinks(allVerifyLinks);
+              }
+            } else if (keyPressed === bulkOpenWithRecordKey || charCode === bulkOpenWithRecordKey) {
+              console.log('PKM Data Entry Assistant: Bulk open with record key detected (direct)');
+              // Trigger bulk open functionality for warning verify buttons
+              const tables = document.querySelectorAll('table[id="table"]');
+              let warningVerifyLinks = [];
+              tables.forEach(table => {
+                const rows = table.querySelectorAll('tr');
+                rows.forEach(row => {
+                  const verifyButton = row.querySelector('a[href*="/servant/verified/"]');
+                  const mohararButton = row.querySelector('a[href*="/certificate/moharar_detail/"]');
+                  if (verifyButton && mohararButton && mohararButton.classList.contains('btn-warning')) {
+                    warningVerifyLinks.push(verifyButton.href);
+                  }
+                });
+              });
+              if (warningVerifyLinks.length > 0) {
+                openAllVerifyLinks(warningVerifyLinks);
+              }
+            } else if (keyPressed === bulkOpenInfoKey || charCode === bulkOpenInfoKey) {
+              console.log('PKM Data Entry Assistant: Bulk open info key detected (direct)');
+              // Trigger bulk open functionality for info verify buttons
+              const tables = document.querySelectorAll('table[id="table"]');
+              let infoVerifyLinks = [];
+              tables.forEach(table => {
+                const rows = table.querySelectorAll('tr');
+                rows.forEach(row => {
+                  const verifyButton = row.querySelector('a[href*="/servant/verified/"]');
+                  const mohararButton = row.querySelector('a[href*="/certificate/moharar_detail/"]');
+                  if (verifyButton && mohararButton && mohararButton.classList.contains('btn-info')) {
+                    infoVerifyLinks.push(verifyButton.href);
+                  }
+                });
+              });
+              if (infoVerifyLinks.length > 0) {
+                openAllVerifyLinks(infoVerifyLinks);
+              }
+            } else if (keyPressed === cnicKey || charCode === cnicKey) {
                 console.log('PKM Data Entry Assistant: CNIC auto-fill key detected (direct)');
                 autofillCnicFields();
               } else if (keyPressed === otpKey || charCode === otpKey) {
@@ -171,25 +250,79 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(function() {
           try {
             console.log('PKM Data Entry Assistant: Initializing extension features');
-            // Add auto-fill buttons to the page
+          
+          // Always add test button
+          addTestButton();
+          
+          // Add bulk open functionality on any PKM page (will check for tables internally)
+          console.log('PKM Data Entry Assistant: Adding bulk open buttons to PKM page');
+          addBulkOpenButton();
+          
+          // Multiple retry attempts to ensure buttons are created (only on allowed pages)
+          setTimeout(() => {
+            addBulkOpenButton();
+          }, 1000);
+          
+          setTimeout(() => {
+            addBulkOpenButton();
+          }, 3000);
+          
+          setTimeout(() => {
+            addBulkOpenButton();
+          }, 5000);
+          
+          setTimeout(() => {
+            addBulkOpenButton();
+          }, 10000);
+          
+          // Wait for DataTable to be fully loaded
+          setTimeout(() => {
+            addBulkOpenButton();
+          }, 15000);
+          
+          // Final retry after a long delay
+          setTimeout(() => {
+            addBulkOpenButton();
+          }, 30000);
+          
+          // Additional retries for certificate page (DataTable loads data dynamically)
+          if (window.location.href.includes('/certificate/index/inprogress/')) {
+            setTimeout(() => {
+              addBulkOpenButton();
+            }, 5000);
+            setTimeout(() => {
+              addBulkOpenButton();
+            }, 10000);
+            setTimeout(() => {
+              addBulkOpenButton();
+            }, 20000);
+            setTimeout(() => {
+              addBulkOpenButton();
+            }, 40000);
+          }
+          
+          // Add auto-fill buttons only on supported pages
+          if (isVerifiedSecondVersion || isCertificatePage || isServantPage) {
+            console.log('PKM Data Entry Assistant: Detected supported page pattern for auto-fill');
             addAutoFillButton();
             addOtpFillButton();
             // Auto-fill fields
             autofillCnicFields();
+          }
+          
             // Add keyboard listener for auto-fill
             addKeyboardListener();
             
             // Show notification about keyboard shortcuts
             safeStorageAccess(function(data) {
-              showNotification(`Keyboard shortcuts active: ${data.cnicFillKey} for CNIC, ${data.emailFillKey} for Email, ${data.sendOtpKey} for Send OTP, ${data.otpFillKey} for OTP, ${data.verifyOtpKey} for Verify OTP, ${data.criminalRecordKey} for Criminal Record, ${data.autoSelectFileKey} for File Input, ${data.saveRecordKey} for Save Record, ${data.autoFillKey} for All Fields`);
+            let notificationText = `Keyboard shortcuts active: ${data.cnicFillKey} for CNIC, ${data.emailFillKey} for Email, ${data.sendOtpKey} for Send OTP, ${data.otpFillKey} for OTP, ${data.verifyOtpKey} for Verify OTP, ${data.criminalRecordKey} for Criminal Record, ${data.autoSelectFileKey} for File Input, ${data.saveRecordKey} for Save Record, ${data.autoFillKey} for All Fields, B for Bulk Open Verify, W for Bulk Open With Record, I for Bulk Open Info`;
+            
+            showNotification(notificationText);
             });
           } catch (e) {
             console.error('PKM Data Entry Assistant: Error initializing extension features:', e);
           }
         }, 1000); // Slight delay to ensure form is loaded
-      } else {
-        console.log('PKM Data Entry Assistant: On PKM site but not on a supported page pattern');
-      }
     } else {
       console.log('PKM Data Entry Assistant: Not on PKM website');
     }
@@ -203,8 +336,13 @@ window.onload = function() {
   try {
     console.log('PKM Data Entry Assistant: window.onload event fired');
     
-    // Check if we're on the PKM website
-    if (window.location.href.includes('police.pkm.punjab.gov.pk')) {
+               // Check if we're on the PKM website
+               if (window.location.href.includes('police.pkm.punjab.gov.pk')) {
+                 console.log('PKM Data Entry Assistant: window.onload - On PKM website, adding buttons');
+                 
+                 // Add buttons immediately on window.onload (only on allowed pages)
+                 addBulkOpenButton();
+      
       // If keyboard listener hasn't been added yet, add it now
       if (!window.keyboardListenerAdded) {
         console.log('PKM Data Entry Assistant: Adding keyboard listener from window.onload event');
@@ -231,6 +369,17 @@ document.addEventListener('keydown', function(event) {
         const keyCode = event.keyCode || event.which;
         const charCode = String.fromCharCode(keyCode).toLowerCase();
         
+        // Check if this is a numpad key and exclude it
+        const isNumpadKey = event.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD;
+        if (isNumpadKey) {
+          console.log('PKM Data Entry Assistant: Numpad key detected (fallback), ignoring:', {
+            key: event.key,
+            keyCode: keyCode,
+            location: event.location
+          });
+          return; // Exit early for numpad keys
+        }
+        
         // Get the configured keys from storage
         safeStorageAccess(function(data) {
           // Normalize the configured keys to lowercase for case-insensitive comparison
@@ -243,9 +392,62 @@ document.addEventListener('keydown', function(event) {
           const verifyOtpKey = data.verifyOtpKey.toLowerCase();
           const saveRecordKey = data.saveRecordKey.toLowerCase();
           const autoSelectFileKey = data.autoSelectFileKey.toLowerCase();
+          const bulkOpenKey = 'b'; // Fixed key for bulk open functionality
+          const bulkOpenWithRecordKey = 'w'; // Fixed key for bulk open with record (warning buttons)
+          const bulkOpenInfoKey = 'i'; // Fixed key for bulk open info buttons
           
           // Check which key was pressed and trigger the appropriate function
-          if (keyPressed === cnicKey || charCode === cnicKey) {
+          if (keyPressed === bulkOpenKey || charCode === bulkOpenKey) {
+            console.log('PKM Data Entry Assistant: Bulk open key detected (fallback)');
+            // Trigger bulk open functionality for verify links
+            const tables = document.querySelectorAll('table[id="table"]');
+            let verifyLinks = [];
+            tables.forEach(table => {
+              const verifyButtons = table.querySelectorAll('a[href*="/servant/verified/"]');
+              verifyButtons.forEach(button => {
+                verifyLinks.push(button.href);
+              });
+            });
+            if (verifyLinks.length > 0) {
+              openAllVerifyLinks(verifyLinks);
+            }
+          } else if (keyPressed === bulkOpenWithRecordKey || charCode === bulkOpenWithRecordKey) {
+            console.log('PKM Data Entry Assistant: Bulk open with record key detected (fallback)');
+            // Trigger bulk open functionality for warning verify buttons
+            const tables = document.querySelectorAll('table[id="table"]');
+            let warningVerifyLinks = [];
+            tables.forEach(table => {
+              const rows = table.querySelectorAll('tr');
+              rows.forEach(row => {
+                const verifyButton = row.querySelector('a[href*="/servant/verified/"]');
+                const mohararButton = row.querySelector('a[href*="/certificate/moharar_detail/"]');
+                if (verifyButton && mohararButton && mohararButton.classList.contains('btn-warning')) {
+                  warningVerifyLinks.push(verifyButton.href);
+                }
+              });
+            });
+            if (warningVerifyLinks.length > 0) {
+              openAllVerifyLinks(warningVerifyLinks);
+            }
+          } else if (keyPressed === bulkOpenInfoKey || charCode === bulkOpenInfoKey) {
+            console.log('PKM Data Entry Assistant: Bulk open info key detected (fallback)');
+            // Trigger bulk open functionality for info verify buttons
+            const tables = document.querySelectorAll('table[id="table"]');
+            let infoVerifyLinks = [];
+            tables.forEach(table => {
+              const rows = table.querySelectorAll('tr');
+              rows.forEach(row => {
+                const verifyButton = row.querySelector('a[href*="/servant/verified/"]');
+                const mohararButton = row.querySelector('a[href*="/certificate/moharar_detail/"]');
+                if (verifyButton && mohararButton && mohararButton.classList.contains('btn-info')) {
+                  infoVerifyLinks.push(verifyButton.href);
+                }
+              });
+            });
+            if (infoVerifyLinks.length > 0) {
+              openAllVerifyLinks(infoVerifyLinks);
+            }
+          } else if (keyPressed === cnicKey || charCode === cnicKey) {
             console.log('PKM Data Entry Assistant: CNIC auto-fill key detected (direct)');
             autofillCnicFields();
           } else if (keyPressed === otpKey || charCode === otpKey) {
@@ -571,11 +773,23 @@ function addKeyboardListener() {
       const keyCode = event.keyCode || event.which;
       const charCode = String.fromCharCode(keyCode).toLowerCase();
       
+      // Check if this is a numpad key and exclude it
+      const isNumpadKey = event.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD;
+      if (isNumpadKey) {
+        console.log('PKM Data Entry Assistant: Numpad key detected, ignoring:', {
+          key: event.key,
+          keyCode: keyCode,
+          location: event.location
+        });
+        return; // Exit early for numpad keys
+      }
+      
       console.log('PKM Data Entry Assistant: Key pressed:', {
         key: event.key,
         keyLower: keyPressed,
         keyCode: keyCode,
-        charCode: charCode
+        charCode: charCode,
+        location: event.location
       });
       
       // Normalize the configured keys to lowercase for case-insensitive comparison
@@ -588,10 +802,63 @@ function addKeyboardListener() {
       const verifyOtpKey = data.verifyOtpKey.toLowerCase();
       const saveRecordKey = data.saveRecordKey.toLowerCase();
       const autoSelectFileKey = data.autoSelectFileKey.toLowerCase();
+      const bulkOpenKey = 'b'; // Fixed key for bulk open functionality
+      const bulkOpenWithRecordKey = 'w'; // Fixed key for bulk open with record (warning buttons)
+      const bulkOpenInfoKey = 'i'; // Fixed key for bulk open info buttons
       
       // Check which key was pressed and trigger the appropriate function
       // Try matching both event.key and the character code from keyCode
-      if (keyPressed === cnicKey || charCode === cnicKey) {
+      if (keyPressed === bulkOpenKey || charCode === bulkOpenKey) {
+        console.log('PKM Data Entry Assistant: Bulk open key pressed');
+        // Trigger bulk open functionality for verify links
+        const tables = document.querySelectorAll('table[id="table"]');
+        let verifyLinks = [];
+        tables.forEach(table => {
+          const verifyButtons = table.querySelectorAll('a[href*="/servant/verified/"]');
+          verifyButtons.forEach(button => {
+            verifyLinks.push(button.href);
+          });
+        });
+        if (verifyLinks.length > 0) {
+          openAllVerifyLinks(verifyLinks);
+        }
+      } else if (keyPressed === bulkOpenWithRecordKey || charCode === bulkOpenWithRecordKey) {
+        console.log('PKM Data Entry Assistant: Bulk open with record key pressed');
+        // Trigger bulk open functionality for warning verify buttons
+        const tables = document.querySelectorAll('table[id="table"]');
+        let warningVerifyLinks = [];
+        tables.forEach(table => {
+          const rows = table.querySelectorAll('tr');
+          rows.forEach(row => {
+            const verifyButton = row.querySelector('a[href*="/servant/verified/"]');
+            const mohararButton = row.querySelector('a[href*="/certificate/moharar_detail/"]');
+            if (verifyButton && mohararButton && mohararButton.classList.contains('btn-warning')) {
+              warningVerifyLinks.push(verifyButton.href);
+            }
+          });
+        });
+        if (warningVerifyLinks.length > 0) {
+          openAllVerifyLinks(warningVerifyLinks);
+        }
+      } else if (keyPressed === bulkOpenInfoKey || charCode === bulkOpenInfoKey) {
+        console.log('PKM Data Entry Assistant: Bulk open info key pressed');
+        // Trigger bulk open functionality for info verify buttons
+        const tables = document.querySelectorAll('table[id="table"]');
+        let infoVerifyLinks = [];
+        tables.forEach(table => {
+          const rows = table.querySelectorAll('tr');
+          rows.forEach(row => {
+            const verifyButton = row.querySelector('a[href*="/servant/verified/"]');
+            const mohararButton = row.querySelector('a[href*="/certificate/moharar_detail/"]');
+            if (verifyButton && mohararButton && mohararButton.classList.contains('btn-info')) {
+              infoVerifyLinks.push(verifyButton.href);
+            }
+          });
+        });
+        if (infoVerifyLinks.length > 0) {
+          openAllVerifyLinks(infoVerifyLinks);
+        }
+      } else if (keyPressed === cnicKey || charCode === cnicKey) {
         console.log('PKM Data Entry Assistant: CNIC key pressed, auto-filling CNIC fields');
         // CNIC auto-fill only
         autofillCnicFields();
@@ -640,7 +907,7 @@ function addKeyboardListener() {
     console.log('PKM Data Entry Assistant: Keyboard listener added successfully, flag set');
     
     // Show notification to indicate keyboard shortcuts are active
-    showNotification(`Keyboard shortcuts active: ${data.cnicFillKey} for CNIC, ${data.emailFillKey} for Email, ${data.sendOtpKey} for Send OTP, ${data.otpFillKey} for OTP, ${data.verifyOtpKey} for Verify OTP, ${data.criminalRecordKey} for Criminal Record, ${data.autoSelectFileKey} for File Input, ${data.saveRecordKey} for Save Record, ${data.autoFillKey} for All Fields`);
+    showNotification(`Keyboard shortcuts active: ${data.cnicFillKey} for CNIC, ${data.emailFillKey} for Email, ${data.sendOtpKey} for Send OTP, ${data.otpFillKey} for OTP, ${data.verifyOtpKey} for Verify OTP, ${data.criminalRecordKey} for Criminal Record, ${data.autoSelectFileKey} for File Input, ${data.saveRecordKey} for Save Record, ${data.autoFillKey} for All Fields, B for Bulk Open Verify, W for Bulk Open With Record, I for Bulk Open Info`);
   });
 }
 
@@ -1460,4 +1727,664 @@ function scrollToFileInput() {
 function scrollToFileInputWithHotkey() {
   console.log('PKM Data Entry Assistant: Scroll to file input hotkey pressed');
   scrollToFileInput();
+}
+
+// Function to remove existing bulk buttons
+function removeExistingBulkButtons() {
+  // Remove existing button container
+  const existingContainer = document.getElementById('pkm-bulk-buttons-container');
+  if (existingContainer) {
+    existingContainer.remove();
+  }
+  
+  // Remove individual buttons if they exist
+  if (window.pkmBulkOpenVerifyButton) {
+    window.pkmBulkOpenVerifyButton.remove();
+    window.pkmBulkOpenVerifyButton = null;
+  }
+  if (window.pkmBulkOpenWithRecordButton) {
+    window.pkmBulkOpenWithRecordButton.remove();
+    window.pkmBulkOpenWithRecordButton = null;
+  }
+  if (window.pkmBulkOpenInfoButton) {
+    window.pkmBulkOpenInfoButton.remove();
+    window.pkmBulkOpenInfoButton = null;
+  }
+}
+
+// Function to detect tables with verify buttons and add bulk open functionality
+function addBulkOpenButton() {
+  // Check if we're on one of the allowed pages
+  const currentUrl = window.location.href;
+  const allowedPages = [
+    'https://police.pkm.punjab.gov.pk/ps/certificate/index/inprogress/',
+    'https://police.pkm.punjab.gov.pk/ps/servant/index/inprogress/'
+  ];
+  
+  const isAllowedPage = allowedPages.some(page => currentUrl.includes(page));
+  
+  if (!isAllowedPage) {
+    return; // Exit early if not on an allowed page
+  }
+  
+  // Remove existing buttons first
+  removeExistingBulkButtons();
+  
+  // Look for tables with verify buttons
+  const tables = document.querySelectorAll('table[id="table"]');
+  
+  // Also try alternative table selectors
+  const allTables = document.querySelectorAll('table');
+  
+  let totalVerifyButtons = 0;
+  let allVerifyLinks = [];
+  let warningVerifyLinks = [];
+  let infoVerifyLinks = [];
+  
+  // First, let's try a simpler approach - look for all verify buttons on the page
+  const allVerifyButtons = document.querySelectorAll('a[href*="/servant/verified/"]');
+  
+  // Also try alternative selectors for verify buttons
+  const altVerifyButtons1 = document.querySelectorAll('a[href*="verified"]');
+  const altVerifyButtons2 = document.querySelectorAll('a[title="verify"]');
+  const altVerifyButtons3 = document.querySelectorAll('a[data-toggle="tooltip"][title="verify"]');
+  
+  // For certificate page, also look for certificate-specific verify buttons
+  const certVerifyButtons1 = document.querySelectorAll('a[href*="/certificate/verified/"]');
+  const certVerifyButtons2 = document.querySelectorAll('a[href*="/certificate/verify/"]');
+  
+  // Use the most comprehensive search
+  const allPossibleVerifyButtons = new Set();
+  
+  // Add all found verify buttons to the set
+  allVerifyButtons.forEach(btn => allPossibleVerifyButtons.add(btn));
+  altVerifyButtons1.forEach(btn => allPossibleVerifyButtons.add(btn));
+  altVerifyButtons2.forEach(btn => allPossibleVerifyButtons.add(btn));
+  altVerifyButtons3.forEach(btn => allPossibleVerifyButtons.add(btn));
+  certVerifyButtons1.forEach(btn => allPossibleVerifyButtons.add(btn));
+  certVerifyButtons2.forEach(btn => allPossibleVerifyButtons.add(btn));
+  
+  allPossibleVerifyButtons.forEach((button, index) => {
+    allVerifyLinks.push(button.href);
+    totalVerifyButtons++;
+  });
+  
+  // Now look for moharar buttons and categorize
+  const allMohararButtons = document.querySelectorAll('a[href*="/certificate/moharar_detail/"]');
+  
+  // Also look for alternative moharar button patterns
+  const altMohararButtons1 = document.querySelectorAll('a[href*="moharar"]');
+  const altMohararButtons2 = document.querySelectorAll('a[title*="moharar"]');
+  
+  // Combine all moharar buttons
+  const allPossibleMohararButtons = new Set();
+  allMohararButtons.forEach(btn => allPossibleMohararButtons.add(btn));
+  altMohararButtons1.forEach(btn => allPossibleMohararButtons.add(btn));
+  altMohararButtons2.forEach(btn => allPossibleMohararButtons.add(btn));
+  
+  allPossibleMohararButtons.forEach((button, index) => {
+    // Find the corresponding verify button in the same row
+    const row = button.closest('tr');
+    if (row) {
+      // Look for verify button with multiple selectors
+      let verifyButton = row.querySelector('a[href*="/servant/verified/"]') || 
+                        row.querySelector('a[href*="/certificate/verified/"]') ||
+                        row.querySelector('a[href*="/certificate/verify/"]') ||
+                        row.querySelector('a[href*="verified"]') ||
+                        row.querySelector('a[title="verify"]');
+      
+      if (verifyButton) {
+        if (button.classList.contains('btn-warning')) {
+          warningVerifyLinks.push(verifyButton.href);
+        } else if (button.classList.contains('btn-info')) {
+          infoVerifyLinks.push(verifyButton.href);
+        }
+      }
+    }
+  });
+  
+  
+  // Store the counts globally so they can be accessed by buttons
+  window.pkmVerifyCounts = {
+    total: totalVerifyButtons,
+    all: allVerifyLinks,
+    warning: warningVerifyLinks,
+    info: infoVerifyLinks
+  };
+  
+  // Function to refresh button text
+  function refreshButtonTexts() {
+    if (window.pkmBulkOpenVerifyButton) {
+      const allUniqueVerifyLinks = [...new Set([...warningVerifyLinks, ...infoVerifyLinks])];
+      const buttonText = allUniqueVerifyLinks.length > 0 ? `Open All Verify (${allUniqueVerifyLinks.length})` : 'Open All Verify (No Records Found)';
+      window.pkmBulkOpenVerifyButton.textContent = buttonText;
+    }
+    if (window.pkmBulkOpenWithRecordButton) {
+      const buttonText = warningVerifyLinks.length > 0 ? `Open All With Record (${warningVerifyLinks.length})` : 'Open All With Record (No Records Found)';
+      window.pkmBulkOpenWithRecordButton.textContent = buttonText;
+    }
+    if (window.pkmBulkOpenInfoButton) {
+      const buttonText = infoVerifyLinks.length > 0 ? `Open All Info (${infoVerifyLinks.length})` : 'Open All Info (No Records Found)';
+      window.pkmBulkOpenInfoButton.textContent = buttonText;
+    }
+  }
+  
+  // Store the refresh function globally
+  window.pkmRefreshButtonTexts = refreshButtonTexts;
+  
+  // Create a function to just refresh counts without recreating buttons
+  function refreshCountsOnly() {
+    
+    // Re-detect verify buttons
+    const allVerifyButtons = document.querySelectorAll('a[href*="/servant/verified/"]');
+    const altVerifyButtons1 = document.querySelectorAll('a[href*="verified"]');
+    const altVerifyButtons2 = document.querySelectorAll('a[title="verify"]');
+    const altVerifyButtons3 = document.querySelectorAll('a[data-toggle="tooltip"][title="verify"]');
+    const certVerifyButtons1 = document.querySelectorAll('a[href*="/certificate/verified/"]');
+    const certVerifyButtons2 = document.querySelectorAll('a[href*="/certificate/verify/"]');
+    
+    const allPossibleVerifyButtons = new Set();
+    allVerifyButtons.forEach(btn => allPossibleVerifyButtons.add(btn));
+    altVerifyButtons1.forEach(btn => allPossibleVerifyButtons.add(btn));
+    altVerifyButtons2.forEach(btn => allPossibleVerifyButtons.add(btn));
+    altVerifyButtons3.forEach(btn => allPossibleVerifyButtons.add(btn));
+    certVerifyButtons1.forEach(btn => allPossibleVerifyButtons.add(btn));
+    certVerifyButtons2.forEach(btn => allPossibleVerifyButtons.add(btn));
+    
+    let newAllVerifyLinks = [];
+    let newWarningVerifyLinks = [];
+    let newInfoVerifyLinks = [];
+    
+    allPossibleVerifyButtons.forEach((button) => {
+      newAllVerifyLinks.push(button.href);
+    });
+    
+    // Re-detect moharar buttons
+    const allMohararButtons = document.querySelectorAll('a[href*="/certificate/moharar_detail/"]');
+    const altMohararButtons1 = document.querySelectorAll('a[href*="moharar"]');
+    const altMohararButtons2 = document.querySelectorAll('a[title*="moharar"]');
+    
+    const allPossibleMohararButtons = new Set();
+    allMohararButtons.forEach(btn => allPossibleMohararButtons.add(btn));
+    altMohararButtons1.forEach(btn => allPossibleMohararButtons.add(btn));
+    altMohararButtons2.forEach(btn => allPossibleMohararButtons.add(btn));
+    
+    allPossibleMohararButtons.forEach((button) => {
+      const row = button.closest('tr');
+      if (row) {
+        let verifyButton = row.querySelector('a[href*="/servant/verified/"]') || 
+                          row.querySelector('a[href*="/certificate/verified/"]') ||
+                          row.querySelector('a[href*="/certificate/verify/"]') ||
+                          row.querySelector('a[href*="verified"]') ||
+                          row.querySelector('a[title="verify"]');
+        if (verifyButton) {
+          if (button.classList.contains('btn-warning')) {
+            newWarningVerifyLinks.push(verifyButton.href);
+          } else if (button.classList.contains('btn-info')) {
+            newInfoVerifyLinks.push(verifyButton.href);
+          }
+        }
+      }
+    });
+    
+    
+    // Update button texts
+    if (window.pkmBulkOpenVerifyButton) {
+      const allUniqueVerifyLinks = [...new Set([...newWarningVerifyLinks, ...newInfoVerifyLinks])];
+      const buttonText = allUniqueVerifyLinks.length > 0 ? `Open All Verify (${allUniqueVerifyLinks.length})` : 'Open All Verify (No Records Found)';
+      window.pkmBulkOpenVerifyButton.textContent = buttonText;
+    }
+    if (window.pkmBulkOpenWithRecordButton) {
+      const buttonText = newWarningVerifyLinks.length > 0 ? `Open All With Record (${newWarningVerifyLinks.length})` : 'Open All With Record (No Records Found)';
+      window.pkmBulkOpenWithRecordButton.textContent = buttonText;
+    }
+    if (window.pkmBulkOpenInfoButton) {
+      const buttonText = newInfoVerifyLinks.length > 0 ? `Open All Info (${newInfoVerifyLinks.length})` : 'Open All Info (No Records Found)';
+      window.pkmBulkOpenInfoButton.textContent = buttonText;
+    }
+    
+    // Update global counts
+    window.pkmVerifyCounts = {
+      total: newAllVerifyLinks.length,
+      all: newAllVerifyLinks,
+      warning: newWarningVerifyLinks,
+      info: newInfoVerifyLinks
+    };
+  }
+  
+  // Store the refresh counts function globally
+  window.pkmRefreshCountsOnly = refreshCountsOnly;
+  
+  // Auto-refresh counts after 2 seconds (only once)
+  if (!window.pkmAutoRefreshTriggered) {
+    window.pkmAutoRefreshTriggered = true;
+    setTimeout(() => {
+      if (window.pkmRefreshCountsOnly) {
+        window.pkmRefreshCountsOnly();
+      }
+    }, 1000);
+  }
+  
+  // For certificate page, also listen for DataTable draw events
+  if (currentUrl.includes('/certificate/index/inprogress/')) {
+    // Wait for DataTable to be initialized and then listen for draw events
+    setTimeout(() => {
+      const table = $('#table').DataTable();
+      if (table) {
+        table.on('draw.dt', function() {
+          // DataTable has been redrawn, refresh button counts
+          setTimeout(() => {
+            if (window.pkmRefreshCountsOnly) {
+              window.pkmRefreshCountsOnly();
+            }
+          }, 500); // Small delay to ensure DOM is updated
+        });
+      }
+    }, 2000);
+  }
+  
+  // Always try to add buttons, even if no verify buttons found
+  
+  // Try multiple methods to find the right place to put buttons
+  let buttonContainer;
+  let insertionPoint = null;
+  
+  // Method 1: Look for table wrapper and length dropdown
+  const tableWrapper = document.querySelector('#table_wrapper');
+  const tableLength = document.querySelector('#table_length');
+  if (tableWrapper && tableLength) {
+    insertionPoint = tableLength;
+  } else if (tableWrapper) {
+    insertionPoint = tableWrapper;
+  }
+  
+  // Method 2: Look for table-responsive div
+  if (!insertionPoint) {
+    const tableResponsive = document.querySelector('.table-responsive');
+    if (tableResponsive) {
+      insertionPoint = tableResponsive;
+    }
+  }
+  
+  // Method 3: Look for panel-body
+  if (!insertionPoint) {
+    const panelBody = document.querySelector('.panel-body');
+    if (panelBody) {
+      insertionPoint = panelBody;
+    }
+  }
+  
+  // Method 4: Look for the table itself
+  if (!insertionPoint) {
+    const table = document.querySelector('table[id="table"]');
+    if (table) {
+      insertionPoint = table;
+    }
+  }
+  
+  // Create button container
+  buttonContainer = document.createElement('div');
+  buttonContainer.id = 'pkm-bulk-buttons-container';
+  buttonContainer.style.cssText = `
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+  `;
+  
+  // Add a header to the container
+  const containerHeader = document.createElement('div');
+  containerHeader.style.cssText = `
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 10px;
+  `;
+    containerHeader.textContent = 'PKM Bulk Actions';
+    buttonContainer.appendChild(containerHeader);
+    
+    // Add a refresh button
+    const refreshButton = document.createElement('button');
+    refreshButton.textContent = '🔄 Refresh Counts';
+    refreshButton.style.cssText = `
+      display: inline-block;
+      margin: 5px 10px 5px 0;
+      padding: 5px 10px;
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    `;
+    refreshButton.onclick = function() {
+      if (window.pkmRefreshCountsOnly) {
+        window.pkmRefreshCountsOnly();
+      } else {
+        addBulkOpenButton();
+      }
+    };
+    buttonContainer.appendChild(refreshButton);
+  
+  // Insert the container
+  if (insertionPoint) {
+    if (insertionPoint === tableLength) {
+      // Insert before the table length dropdown
+      insertionPoint.parentNode.insertBefore(buttonContainer, insertionPoint);
+    } else {
+      // Insert at the beginning of the target element
+      insertionPoint.insertBefore(buttonContainer, insertionPoint.firstChild);
+    }
+  } else {
+    // Fallback to fixed positioning
+    buttonContainer.style.cssText = `
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      width: 300px;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      z-index: 9999;
+    `;
+    document.body.appendChild(buttonContainer);
+  }
+  
+  
+  let buttonTop = 10;
+  const buttonSpacing = 50;
+  
+  // Create the "Open All Verify" button (for /servant/verified/ links) - ALWAYS CREATE
+  if (true) { // Always create buttons for testing
+    const openAllVerifyButton = document.createElement('button');
+    const allUniqueVerifyLinks = [...new Set([...warningVerifyLinks, ...infoVerifyLinks])];
+    const buttonText = allUniqueVerifyLinks.length > 0 ? `Open All Verify (${allUniqueVerifyLinks.length})` : 'Open All Verify (No Records Found)';
+    openAllVerifyButton.textContent = buttonText;
+    
+    // Basic button styling
+    openAllVerifyButton.style.cssText = `
+      display: inline-block;
+      margin: 5px 10px 5px 0;
+      padding: 10px 15px;
+      background-color: #9b59b6;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+    `;
+    
+    // Add hover effect
+    openAllVerifyButton.addEventListener('mouseenter', function() {
+      this.style.backgroundColor = '#8e44ad';
+    });
+    openAllVerifyButton.addEventListener('mouseleave', function() {
+      this.style.backgroundColor = '#9b59b6';
+    });
+    
+    // Add click event listener
+    openAllVerifyButton.addEventListener('click', function() {
+      // Use global counts to get the current links
+      const currentCounts = window.pkmVerifyCounts || { warning: [], info: [] };
+      const allUniqueVerifyLinks = [...new Set([...currentCounts.warning, ...currentCounts.info])];
+      
+      if (allUniqueVerifyLinks.length === 0) {
+        alert('No verify records found!');
+        return;
+      }
+      
+      openAllVerifyLinks(allUniqueVerifyLinks);
+    });
+    
+    // Add to page
+    if (buttonContainer.id === 'pkm-bulk-buttons-container') {
+      buttonContainer.appendChild(openAllVerifyButton);
+    } else {
+      document.body.appendChild(openAllVerifyButton);
+    }
+    window.pkmBulkOpenVerifyButton = openAllVerifyButton;
+    buttonTop += buttonSpacing;
+  }
+  
+  // Create the "Open All With Record" button (for warning verify buttons) - ALWAYS CREATE
+  if (true) { // Always create buttons for testing
+    const openAllWithRecordButton = document.createElement('button');
+    const buttonText = warningVerifyLinks.length > 0 ? `Open All With Record (${warningVerifyLinks.length})` : 'Open All With Record (No Records Found)';
+    openAllWithRecordButton.textContent = buttonText;
+    
+    // Basic button styling
+    openAllWithRecordButton.style.cssText = `
+      display: inline-block;
+      margin: 5px 10px 5px 0;
+      padding: 10px 15px;
+      background-color: #f39c12;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+    `;
+    
+    // Add hover effect
+    openAllWithRecordButton.addEventListener('mouseenter', function() {
+      this.style.backgroundColor = '#e67e22';
+    });
+    openAllWithRecordButton.addEventListener('mouseleave', function() {
+      this.style.backgroundColor = '#f39c12';
+    });
+    
+    // Add click event listener
+    openAllWithRecordButton.addEventListener('click', function() {
+      // Use global counts to get the current links
+      const currentCounts = window.pkmVerifyCounts || { warning: [] };
+      
+      if (currentCounts.warning.length === 0) {
+        alert('No warning records found!');
+        return;
+      }
+      
+      openAllVerifyLinks(currentCounts.warning);
+    });
+    
+    // Add to page
+    if (buttonContainer.id === 'pkm-bulk-buttons-container') {
+      buttonContainer.appendChild(openAllWithRecordButton);
+    } else {
+      document.body.appendChild(openAllWithRecordButton);
+    }
+    window.pkmBulkOpenWithRecordButton = openAllWithRecordButton;
+    buttonTop += buttonSpacing;
+  }
+  
+  // Create the "Open All Info" button (for info verify buttons) - ALWAYS CREATE
+  if (true) { // Always create buttons for testing
+    const openAllInfoButton = document.createElement('button');
+    const buttonText = infoVerifyLinks.length > 0 ? `Open All Info (${infoVerifyLinks.length})` : 'Open All Info (No Records Found)';
+    openAllInfoButton.textContent = buttonText;
+    
+    // Basic button styling
+    openAllInfoButton.style.cssText = `
+      display: inline-block;
+      margin: 5px 10px 5px 0;
+      padding: 10px 15px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+    `;
+    
+    // Add hover effect
+    openAllInfoButton.addEventListener('mouseenter', function() {
+      this.style.backgroundColor = '#2980b9';
+    });
+    openAllInfoButton.addEventListener('mouseleave', function() {
+      this.style.backgroundColor = '#3498db';
+    });
+    
+    // Add click event listener
+    openAllInfoButton.addEventListener('click', function() {
+      // Use global counts to get the current links
+      const currentCounts = window.pkmVerifyCounts || { info: [] };
+      
+      if (currentCounts.info.length === 0) {
+        alert('No info records found!');
+        return;
+      }
+      
+      openAllVerifyLinks(currentCounts.info);
+    });
+    
+    // Add to page
+    if (buttonContainer.id === 'pkm-bulk-buttons-container') {
+      buttonContainer.appendChild(openAllInfoButton);
+    } else {
+      document.body.appendChild(openAllInfoButton);
+    }
+    window.pkmBulkOpenInfoButton = openAllInfoButton;
+    buttonTop += buttonSpacing;
+  }
+  
+  // Show notification
+  if (totalVerifyButtons > 0) {
+    let notificationText = `Found ${totalVerifyButtons} verify records`;
+    if (warningVerifyLinks.length > 0) notificationText += `, ${warningVerifyLinks.length} with records`;
+    if (infoVerifyLinks.length > 0) notificationText += `, ${infoVerifyLinks.length} info records`;
+    showNotification(notificationText + '. Use buttons to open specific types.');
+  }
+}
+
+// Function to open all verify links in new tabs
+function openAllVerifyLinks(verifyLinks) {
+  
+  if (verifyLinks.length === 0) {
+    showNotification('No verify links found to open');
+    return;
+  }
+  
+  // Show progress notification
+  showNotification(`Opening ${verifyLinks.length} records in new tabs...`);
+  
+  // Open each link in a new tab with a small delay to avoid overwhelming the browser
+  verifyLinks.forEach((link, index) => {
+    setTimeout(() => {
+      try {
+        console.log(`PKM Data Entry Assistant: Opening tab ${index + 1}/${verifyLinks.length}:`, link);
+        window.open(link, '_blank');
+      } catch (e) {
+        console.error('PKM Data Entry Assistant: Error opening link:', e);
+      }
+    }, index * 200); // 200ms delay between each tab opening
+  });
+  
+  // Show completion notification after all tabs are opened
+  setTimeout(() => {
+    showNotification(`Successfully opened ${verifyLinks.length} records in new tabs!`);
+  }, verifyLinks.length * 200 + 500);
+}
+
+// Function to refresh bulk open button (useful when table content changes)
+function refreshBulkOpenButton() {
+  console.log('PKM Data Entry Assistant: Refreshing bulk open buttons');
+  
+  // Remove existing button container if it exists
+  const existingContainer = document.getElementById('pkm-bulk-buttons-container');
+  if (existingContainer) {
+    console.log('PKM Data Entry Assistant: Removing existing button container');
+    existingContainer.parentNode.removeChild(existingContainer);
+  }
+  
+  // Remove existing buttons if they exist (fallback for fixed positioning)
+  if (window.pkmBulkOpenVerifyButton && window.pkmBulkOpenVerifyButton.parentNode) {
+    window.pkmBulkOpenVerifyButton.parentNode.removeChild(window.pkmBulkOpenVerifyButton);
+    window.pkmBulkOpenVerifyButton = null;
+  }
+  
+  if (window.pkmBulkOpenWithRecordButton && window.pkmBulkOpenWithRecordButton.parentNode) {
+    window.pkmBulkOpenWithRecordButton.parentNode.removeChild(window.pkmBulkOpenWithRecordButton);
+    window.pkmBulkOpenWithRecordButton = null;
+  }
+  
+  if (window.pkmBulkOpenInfoButton && window.pkmBulkOpenInfoButton.parentNode) {
+    window.pkmBulkOpenInfoButton.parentNode.removeChild(window.pkmBulkOpenInfoButton);
+    window.pkmBulkOpenInfoButton = null;
+  }
+  
+  // Add new buttons
+  addBulkOpenButton();
+}
+
+// Function to add a simple test button to verify extension is working
+function addTestButton() {
+  console.log('PKM Data Entry Assistant: Adding test button');
+  
+  // Remove existing test button if it exists
+  const existingTestButton = document.getElementById('pkm-test-button');
+  if (existingTestButton) {
+    existingTestButton.remove();
+  }
+  
+  // Create a simple test button
+  const testButton = document.createElement('button');
+  testButton.id = 'pkm-test-button';
+  testButton.textContent = 'PKM Extension Active';
+  testButton.style.cssText = `
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    padding: 8px 12px;
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    z-index: 99999;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  `;
+  
+  testButton.addEventListener('click', function() {
+    console.log('PKM Data Entry Assistant: Test button clicked');
+    
+    // Check for tables
+    const tables = document.querySelectorAll('table[id="table"]');
+    const panelBody = document.querySelector('.panel-body.list-group');
+    
+    let message = 'PKM Extension is working!\n\n';
+    message += 'Tables found: ' + tables.length + '\n';
+    message += 'Panel-body found: ' + (panelBody ? 'Yes' : 'No') + '\n';
+    message += 'Current URL: ' + window.location.href + '\n\n';
+    
+    if (tables.length > 0) {
+      let verifyCount = 0;
+      let warningCount = 0;
+      let infoCount = 0;
+      
+      tables.forEach(table => {
+        verifyCount += table.querySelectorAll('a[href*="/servant/verified/"]').length;
+        const mohararButtons = table.querySelectorAll('a[href*="/certificate/moharar_detail/"]');
+        mohararButtons.forEach(button => {
+          if (button.classList.contains('btn-warning')) warningCount++;
+          else if (button.classList.contains('btn-info')) infoCount++;
+        });
+      });
+      
+      message += 'Verify buttons: ' + verifyCount + '\n';
+      message += 'Warning buttons: ' + warningCount + '\n';
+      message += 'Info buttons: ' + infoCount + '\n';
+    }
+    
+    alert(message);
+  });
+  
+  document.body.appendChild(testButton);
+  console.log('PKM Data Entry Assistant: Test button added');
 }
